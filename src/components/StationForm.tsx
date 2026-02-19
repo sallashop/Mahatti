@@ -6,9 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
-import { Upload, MapPin, Loader2 } from "lucide-react";
+import { Upload, MapPin, Loader2, Camera, FileText } from "lucide-react";
 import LocationPicker from "./LocationPicker";
 
 interface StationFormProps {
@@ -21,7 +20,7 @@ const StationForm: React.FC<StationFormProps> = ({ station, onSuccess, onCancel 
   const { t } = useTranslation();
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
-  const [uploadingPassport, setUploadingPassport] = useState(false);
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [uploadingLicense, setUploadingLicense] = useState(false);
 
   const [formData, setFormData] = useState({
@@ -33,8 +32,8 @@ const StationForm: React.FC<StationFormProps> = ({ station, onSuccess, onCancel 
     lat: station?.lat || 0,
     lng: station?.lng || 0,
     fuel_types: station?.fuel_types || [] as string[],
-    passport_image_url: station?.passport_image_url || "",
-    license_image_url: station?.license_image_url || "",
+    passport_image_url: station?.passport_image_url || "",   // station photo
+    license_image_url: station?.license_image_url || "",     // station license
   });
 
   const handleFuelTypeChange = (type: string, checked: boolean) => {
@@ -95,6 +94,23 @@ const StationForm: React.FC<StationFormProps> = ({ station, onSuccess, onCancel 
       setLoading(false);
     }
   };
+
+  const uploadFields = [
+    {
+      field: "passport_image_url" as const,
+      label: t("station_photo"),
+      icon: <Camera className="w-5 h-5 text-muted-foreground" />,
+      isUploading: uploadingPhoto,
+      setUploading: setUploadingPhoto,
+    },
+    {
+      field: "license_image_url" as const,
+      label: t("station_license"),
+      icon: <FileText className="w-5 h-5 text-muted-foreground" />,
+      isUploading: uploadingLicense,
+      setUploading: setUploadingLicense,
+    },
+  ];
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
@@ -188,38 +204,38 @@ const StationForm: React.FC<StationFormProps> = ({ station, onSuccess, onCancel 
 
       {/* File uploads */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        {(["passport_image_url", "license_image_url"] as const).map((field) => {
-          const isPassport = field === "passport_image_url";
-          const isUploading = isPassport ? uploadingPassport : uploadingLicense;
-          const setUploading = isPassport ? setUploadingPassport : setUploadingLicense;
-
-          return (
-            <div key={field} className="space-y-2">
-              <Label className="font-semibold">{t(isPassport ? "passport_image" : "license_image")}</Label>
-              <label className="flex flex-col items-center justify-center w-full h-28 border-2 border-dashed border-border rounded-xl cursor-pointer hover:border-primary/50 hover:bg-muted/50 transition-colors">
-                {formData[field] ? (
-                  <img src={formData[field]} alt="" className="h-24 w-full object-contain rounded-xl" />
-                ) : isUploading ? (
-                  <Loader2 className="w-6 h-6 animate-spin text-primary" />
-                ) : (
-                  <>
-                    <Upload className="w-6 h-6 text-muted-foreground" />
-                    <span className="text-xs text-muted-foreground mt-1">{t("upload_image")}</span>
-                  </>
-                )}
-                <input
-                  type="file"
-                  className="hidden"
-                  accept="image/*"
-                  onChange={(e) => {
-                    const file = e.target.files?.[0];
-                    if (file) handleFileUpload(file, field, setUploading);
-                  }}
-                />
-              </label>
-            </div>
-          );
-        })}
+        {uploadFields.map(({ field, label, icon, isUploading, setUploading }) => (
+          <div key={field} className="space-y-2">
+            <Label className="font-semibold">{label}</Label>
+            <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-border rounded-xl cursor-pointer hover:border-primary/50 hover:bg-muted/50 transition-colors relative overflow-hidden">
+              {formData[field] ? (
+                <>
+                  <img src={formData[field]} alt="" className="absolute inset-0 w-full h-full object-cover rounded-xl" />
+                  <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity rounded-xl">
+                    <p className="text-white text-xs font-semibold">{t("upload_image")}</p>
+                  </div>
+                </>
+              ) : isUploading ? (
+                <Loader2 className="w-6 h-6 animate-spin text-primary" />
+              ) : (
+                <>
+                  {icon}
+                  <span className="text-xs text-muted-foreground mt-1">{t("upload_image")}</span>
+                  <span className="text-xs text-muted-foreground/60 mt-0.5">{label}</span>
+                </>
+              )}
+              <input
+                type="file"
+                className="hidden"
+                accept="image/*"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) handleFileUpload(file, field, setUploading);
+                }}
+              />
+            </label>
+          </div>
+        ))}
       </div>
 
       {/* Buttons */}
