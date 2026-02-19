@@ -5,6 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import StationCard from "@/components/StationCard";
+import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -86,7 +87,7 @@ const AdminDashboard: React.FC = () => {
   if (authLoading) return null;
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background flex flex-col">
       <Navbar />
 
       {/* Header */}
@@ -216,6 +217,8 @@ const AdminDashboard: React.FC = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <Footer />
     </div>
   );
 };

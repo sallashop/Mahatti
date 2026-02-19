@@ -1,0 +1,17 @@
+{
+  "name": "محطتي | Mahatati",
+  "short_name": "محطتي",
+  "description": "دليلك الشامل لمحطات الوقود",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0f1e3d",
+  "theme_color": "#1a2d5a",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "64x64",
+      "type": "image/x-icon"
+    }
+  ]
+}

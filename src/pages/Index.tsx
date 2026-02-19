@@ -4,11 +4,12 @@ import { supabase } from "@/integrations/supabase/client";
 import Navbar from "@/components/Navbar";
 import StationCard from "@/components/StationCard";
 import LocationPicker from "@/components/LocationPicker";
+import Footer from "@/components/Footer";
+import PWAInstallPrompt from "@/components/PWAInstallPrompt";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Search, Fuel, MapPin, Activity, ChevronDown } from "lucide-react";
+import { Search, Fuel, MapPin, Activity } from "lucide-react";
 import logo from "@/assets/logo.png";
 
 const Index: React.FC = () => {
@@ -62,8 +63,9 @@ const Index: React.FC = () => {
   const totalVerified = stations.filter((s) => s.verification_status === "verified").length;
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background flex flex-col">
       <Navbar />
+      <PWAInstallPrompt />
 
       {/* Hero Section */}
       <section className="hero-gradient text-white relative overflow-hidden">
@@ -75,7 +77,7 @@ const Index: React.FC = () => {
           <div className="flex flex-col items-center text-center">
             <div className="relative mb-6">
               <div className="absolute inset-0 rounded-full bg-amber-400/30 blur-2xl scale-150" />
-              <img src={logo} alt="محطتي" className="w-20 h-20 rounded-full relative z-10 shadow-2xl" />
+              <img src={logo} alt={t("app_name")} className="w-20 h-20 rounded-full relative z-10 shadow-2xl" />
             </div>
             <h1 className="text-4xl sm:text-5xl font-black mb-3 leading-tight">
               {t("welcome")}
@@ -102,7 +104,7 @@ const Index: React.FC = () => {
       </section>
 
       {/* Search & Filter */}
-      <section className="container mx-auto px-4 py-8">
+      <section className="container mx-auto px-4 py-8 flex-1">
         <div className="bg-card rounded-2xl border border-border p-4 shadow-sm mb-6 space-y-3">
           <div className="relative">
             <Search className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -114,7 +116,6 @@ const Index: React.FC = () => {
             />
           </div>
           <div className="flex gap-2 flex-wrap">
-            {/* Status filter */}
             {(["all", "active", "inactive"] as const).map((f) => (
               <Button
                 key={f}
@@ -122,16 +123,13 @@ const Index: React.FC = () => {
                 variant={filterStatus === f ? "default" : "outline"}
                 onClick={() => setFilterStatus(f)}
                 className={`text-xs font-semibold ${
-                  filterStatus === f
-                    ? "bg-primary text-primary-foreground"
-                    : "text-muted-foreground"
+                  filterStatus === f ? "bg-primary text-primary-foreground" : "text-muted-foreground"
                 }`}
               >
                 {t(f === "all" ? "all" : f === "active" ? "active" : "inactive")}
               </Button>
             ))}
             <div className="w-px bg-border" />
-            {/* Fuel filter */}
             {(["all", "benzine", "diesel"] as const).map((f) => (
               <Button
                 key={f}
@@ -139,9 +137,7 @@ const Index: React.FC = () => {
                 variant={filterFuel === f ? "default" : "outline"}
                 onClick={() => setFilterFuel(f)}
                 className={`text-xs font-semibold ${
-                  filterFuel === f
-                    ? "accent-gradient text-primary border-0"
-                    : "text-muted-foreground"
+                  filterFuel === f ? "accent-gradient text-primary border-0" : "text-muted-foreground"
                 }`}
               >
                 {t(f === "all" ? "all" : f)}
@@ -199,6 +195,8 @@ const Index: React.FC = () => {
           )}
         </DialogContent>
       </Dialog>
+
+      <Footer />
     </div>
   );
 };

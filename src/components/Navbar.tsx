@@ -1,10 +1,26 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Button } from "@/components/ui/button";
-import { LogOut, LayoutDashboard, Globe, ShieldCheck, Fuel } from "lucide-react";
+import {
+  Sheet,
+  SheetContent,
+  SheetTrigger,
+  SheetClose,
+} from "@/components/ui/sheet";
+import {
+  LogOut,
+  LayoutDashboard,
+  Globe,
+  ShieldCheck,
+  Fuel,
+  Menu,
+  Moon,
+  Sun,
+  Home,
+} from "lucide-react";
 import logo from "@/assets/logo.png";
 
 const Navbar: React.FC = () => {
@@ -12,90 +28,184 @@ const Navbar: React.FC = () => {
   const { user, isAdmin, isOwner, signOut } = useAuth();
   const { language, toggleLanguage } = useLanguage();
   const navigate = useNavigate();
+  const [isDark, setIsDark] = useState(false);
+  const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    const saved = localStorage.getItem("theme");
+    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+    const dark = saved === "dark" || (!saved && prefersDark);
+    setIsDark(dark);
+    document.documentElement.classList.toggle("dark", dark);
+  }, []);
+
+  const toggleTheme = () => {
+    const next = !isDark;
+    setIsDark(next);
+    document.documentElement.classList.toggle("dark", next);
+    localStorage.setItem("theme", next ? "dark" : "light");
+  };
 
   const handleLogout = async () => {
     await signOut();
+    setOpen(false);
     navigate("/");
+  };
+
+  const handleNav = (path: string) => {
+    navigate(path);
+    setOpen(false);
   };
 
   return (
     <nav className="nav-glass sticky top-0 z-50 shadow-lg">
-      <div className="container mx-auto px-4 h-16 flex items-center justify-between">
+      <div className="container mx-auto px-4 h-14 flex items-center justify-between gap-2">
         {/* Logo */}
-        <Link to="/" className="flex items-center gap-2 group">
-          <img src={logo} alt="محطتي" className="w-9 h-9 rounded-full" />
-          <span className="text-xl font-bold text-white group-hover:text-amber-400 transition-colors">
+        <Link to="/" className="flex items-center gap-2 group shrink-0">
+          <img src={logo} alt={t("app_name")} className="w-8 h-8 rounded-full" />
+          <span className="text-lg font-bold text-white group-hover:text-amber-400 transition-colors">
             {t("app_name")}
           </span>
         </Link>
 
-        {/* Actions */}
-        <div className="flex items-center gap-2">
+        {/* Right side: Language + Dark mode + Menu */}
+        <div className="flex items-center gap-1">
           {/* Language Toggle */}
           <Button
             variant="ghost"
-            size="sm"
+            size="icon"
             onClick={toggleLanguage}
-            className="text-white hover:text-amber-400 hover:bg-white/10 gap-1"
+            className="text-white hover:text-amber-400 hover:bg-white/10 w-8 h-8"
+            title={language === "ar" ? "English" : "عربي"}
           >
             <Globe className="w-4 h-4" />
-            <span className="text-xs font-semibold">{language === "ar" ? "EN" : "ع"}</span>
+            <span className="text-[10px] font-bold leading-none -mt-0.5">
+              {language === "ar" ? "EN" : "ع"}
+            </span>
           </Button>
 
-          {user ? (
-            <>
-              {isAdmin && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => navigate("/admin")}
-                  className="text-white hover:text-amber-400 hover:bg-white/10 gap-1"
-                >
-                  <ShieldCheck className="w-4 h-4" />
-                  <span className="hidden sm:inline text-xs">{t("admin")}</span>
-                </Button>
-              )}
-              {isOwner && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => navigate("/dashboard")}
-                  className="text-white hover:text-amber-400 hover:bg-white/10 gap-1"
-                >
-                  <LayoutDashboard className="w-4 h-4" />
-                  <span className="hidden sm:inline text-xs">{t("dashboard")}</span>
-                </Button>
-              )}
+          {/* Dark mode Toggle */}
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={toggleTheme}
+            className="text-white hover:text-amber-400 hover:bg-white/10 w-8 h-8"
+            title={isDark ? t("light_mode") : t("dark_mode")}
+          >
+            {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+          </Button>
+
+          {/* Hamburger Menu */}
+          <Sheet open={open} onOpenChange={setOpen}>
+            <SheetTrigger asChild>
               <Button
                 variant="ghost"
-                size="sm"
-                onClick={handleLogout}
-                className="text-white hover:text-red-400 hover:bg-white/10 gap-1"
+                size="icon"
+                className="text-white hover:text-amber-400 hover:bg-white/10 w-8 h-8"
               >
-                <LogOut className="w-4 h-4" />
-                <span className="hidden sm:inline text-xs">{t("logout")}</span>
+                <Menu className="w-5 h-5" />
               </Button>
-            </>
-          ) : (
-            <>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => navigate("/auth")}
-                className="text-white hover:text-amber-400 hover:bg-white/10"
-              >
-                {t("login")}
-              </Button>
-              <Button
-                size="sm"
-                onClick={() => navigate("/auth?tab=register")}
-                className="accent-gradient text-primary font-bold hover:opacity-90 shadow-md border-0"
-              >
-                <Fuel className="w-4 h-4 me-1" />
-                {t("station_owner_portal")}
-              </Button>
-            </>
-          )}
+            </SheetTrigger>
+            <SheetContent side="right" className="w-72 bg-card border-border p-0">
+              {/* Drawer Header */}
+              <div className="hero-gradient p-6 pb-4">
+                <div className="flex items-center gap-3">
+                  <img src={logo} alt={t("app_name")} className="w-10 h-10 rounded-full shadow-lg" />
+                  <div>
+                    <p className="font-black text-white text-lg">{t("app_name")}</p>
+                    {user && (
+                      <p className="text-white/60 text-xs truncate">{user.email}</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Menu Items */}
+              <div className="p-4 space-y-1">
+                <SheetClose asChild>
+                  <button
+                    onClick={() => handleNav("/")}
+                    className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-foreground hover:bg-muted transition-colors text-sm font-semibold"
+                  >
+                    <Home className="w-4 h-4 text-primary" />
+                    {t("home")}
+                  </button>
+                </SheetClose>
+
+                {user ? (
+                  <>
+                    {isOwner && (
+                      <SheetClose asChild>
+                        <button
+                          onClick={() => handleNav("/dashboard")}
+                          className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-foreground hover:bg-muted transition-colors text-sm font-semibold"
+                        >
+                          <LayoutDashboard className="w-4 h-4 text-primary" />
+                          {t("dashboard")}
+                        </button>
+                      </SheetClose>
+                    )}
+                    {isAdmin && (
+                      <SheetClose asChild>
+                        <button
+                          onClick={() => handleNav("/admin")}
+                          className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-foreground hover:bg-muted transition-colors text-sm font-semibold"
+                        >
+                          <ShieldCheck className="w-4 h-4 text-amber-500" />
+                          {t("admin")}
+                        </button>
+                      </SheetClose>
+                    )}
+
+                    <div className="border-t border-border my-2" />
+
+                    <button
+                      onClick={handleLogout}
+                      className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-destructive hover:bg-destructive/10 transition-colors text-sm font-semibold"
+                    >
+                      <LogOut className="w-4 h-4" />
+                      {t("logout")}
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <div className="border-t border-border my-2" />
+                    <SheetClose asChild>
+                      <button
+                        onClick={() => handleNav("/auth")}
+                        className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-foreground hover:bg-muted transition-colors text-sm font-semibold"
+                      >
+                        <Fuel className="w-4 h-4 text-primary" />
+                        {t("login")}
+                      </button>
+                    </SheetClose>
+                    <SheetClose asChild>
+                      <button
+                        onClick={() => handleNav("/auth?tab=register")}
+                        className="w-full flex items-center gap-3 px-4 py-3 rounded-xl accent-gradient text-primary font-bold transition-colors text-sm mt-1"
+                      >
+                        <Fuel className="w-4 h-4" />
+                        {t("station_owner_portal")}
+                      </button>
+                    </SheetClose>
+                  </>
+                )}
+              </div>
+
+              {/* Footer in drawer */}
+              <div className="absolute bottom-6 start-4 end-4">
+                <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-muted/50">
+                  <Globe className="w-4 h-4 text-muted-foreground" />
+                  <button
+                    onClick={toggleLanguage}
+                    className="text-sm text-muted-foreground hover:text-foreground transition-colors font-semibold"
+                  >
+                    {language === "ar" ? "Switch to English" : "التحويل للعربية"}
+                  </button>
+                </div>
+              </div>
+            </SheetContent>
+          </Sheet>
         </div>
       </div>
     </nav>
