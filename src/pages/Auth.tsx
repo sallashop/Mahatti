@@ -122,7 +122,7 @@ const Auth: React.FC = () => {
                 </div>
                 <Button
                   type="submit"
-                  className="w-full accent-gradient text-primary font-bold border-0 h-11 hover:opacity-90"
+                  className="w-full accent-gradient !text-accent-foreground font-bold border-0 h-11 hover:opacity-90"
                   disabled={loading}
                 >
                   {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : t("login")}
@@ -191,7 +191,7 @@ const Auth: React.FC = () => {
                 </div>
                 <Button
                   type="submit"
-                  className="w-full accent-gradient text-primary font-bold border-0 h-11 hover:opacity-90"
+                  className="w-full accent-gradient !text-accent-foreground font-bold border-0 h-11 hover:opacity-90"
                   disabled={loading}
                 >
                   {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : t("register")}
