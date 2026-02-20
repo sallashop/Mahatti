@@ -73,14 +73,14 @@ const Navbar: React.FC = () => {
           {/* Language Toggle */}
           <Button
             variant="ghost"
-            size="icon"
+            size="sm"
             onClick={toggleLanguage}
-            className="text-white hover:text-amber-400 hover:bg-white/10 w-8 h-8"
+            className="text-white hover:text-amber-400 hover:bg-white/10 h-8 px-2 gap-1"
             title={language === "ar" ? "English" : "عربي"}
           >
-            <Globe className="w-4 h-4" />
-            <span className="text-[10px] font-bold leading-none -mt-0.5">
-              {language === "ar" ? "EN" : "ع"}
+            <Globe className="w-4 h-4 shrink-0" />
+            <span className="text-xs font-bold whitespace-nowrap">
+              {language === "ar" ? "EN" : "عربي"}
             </span>
           </Button>
 
@@ -182,7 +182,7 @@ const Navbar: React.FC = () => {
                     <SheetClose asChild>
                       <button
                         onClick={() => handleNav("/auth?tab=register")}
-                        className="w-full flex items-center gap-3 px-4 py-3 rounded-xl accent-gradient text-primary font-bold transition-colors text-sm mt-1"
+                        className="w-full flex items-center gap-3 px-4 py-3 rounded-xl accent-gradient !text-accent-foreground font-bold transition-colors text-sm mt-1"
                       >
                         <Fuel className="w-4 h-4" />
                         {t("station_owner_portal")}
