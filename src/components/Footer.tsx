@@ -1,7 +1,6 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
-import { Fuel, Heart } from "lucide-react";
 import logo from "@/assets/logo.png";
 
 const Footer: React.FC = () => {
@@ -70,11 +69,8 @@ const Footer: React.FC = () => {
           </div>
         </div>
 
-        <div className="mt-8 pt-6 border-t border-primary-foreground/10 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-primary-foreground/50">
+        <div className="mt-8 pt-6 border-t border-primary-foreground/10 text-center text-xs text-primary-foreground/50">
           <p>© {year} {t("app_name")}. {t("all_rights_reserved")}</p>
-          <p className="flex items-center gap-1">
-            {t("made_with")} <Heart className="w-3 h-3 text-red-400 fill-red-400" />
-          </p>
         </div>
       </div>
     </footer>
