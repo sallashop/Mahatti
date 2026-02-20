@@ -139,11 +139,11 @@ const StationCard: React.FC<StationCardProps> = ({
               {t("station_details")}
             </Button>
 
-            {onViewMap && station.lat && station.lng && (
+            {station.lat && station.lng && (
               <Button
                 variant="outline"
                 size="sm"
-                onClick={onViewMap}
+                onClick={() => window.open(`https://www.google.com/maps/dir/?api=1&destination=${station.lat},${station.lng}`, '_blank')}
                 className="gap-1.5 text-xs border-border text-foreground dark:text-foreground hover:bg-muted"
               >
                 <MapPin className="w-3.5 h-3.5" />
