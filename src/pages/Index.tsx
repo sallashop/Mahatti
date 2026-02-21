@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Search, Fuel, MapPin, Activity } from "lucide-react";
+import StationsMap from "@/components/StationsMap";
 import logo from "@/assets/logo.png";
 
 const Index: React.FC = () => {
@@ -103,8 +104,11 @@ const Index: React.FC = () => {
         <div className="absolute bottom-0 left-0 right-0 h-8 bg-background" style={{ borderRadius: "100% 100% 0 0" }} />
       </section>
 
+      {/* Interactive Map */}
+      <StationsMap stations={stations} />
+
       {/* Search & Filter */}
-      <section className="container mx-auto px-4 py-8 flex-1">
+      <section className="container mx-auto px-4 pb-8 flex-1">
         <div className="bg-card rounded-2xl border border-border p-4 shadow-sm mb-6 space-y-3">
           <div className="relative">
             <Search className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
