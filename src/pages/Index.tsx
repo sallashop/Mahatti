@@ -141,7 +141,7 @@ const Index: React.FC = () => {
                 variant={filterFuel === f ? "default" : "outline"}
                 onClick={() => setFilterFuel(f)}
                 className={`text-xs font-semibold ${
-                  filterFuel === f ? "accent-gradient text-primary border-0" : "text-muted-foreground"
+                  filterFuel === f ? "accent-gradient !text-accent-foreground border-0" : "text-muted-foreground"
                 }`}
               >
                 {t(f === "all" ? "all" : f)}
