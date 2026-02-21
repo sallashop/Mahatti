@@ -8,7 +8,7 @@ const Footer: React.FC = () => {
   const year = new Date().getFullYear();
 
   return (
-    <footer className="bg-primary dark:bg-[hsl(220,70%,10%)] text-primary-foreground mt-12">
+    <footer className="bg-primary dark:bg-[hsl(220,50%,8%)] text-primary-foreground dark:text-slate-300 mt-12">
       <div className="container mx-auto px-4 py-10">
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-8">
           {/* Brand */}
@@ -17,7 +17,7 @@ const Footer: React.FC = () => {
               <img src={logo} alt={t("app_name")} className="w-8 h-8 rounded-full" />
               <span className="text-lg font-black text-primary-foreground">{t("app_name")}</span>
             </div>
-            <p className="text-sm text-primary-foreground/60 leading-relaxed">{t("footer_desc")}</p>
+            <p className="text-sm text-primary-foreground/60 dark:text-slate-400 leading-relaxed">{t("footer_desc")}</p>
           </div>
 
           {/* Quick Links */}
@@ -27,22 +27,22 @@ const Footer: React.FC = () => {
             </h3>
             <ul className="space-y-2">
               <li>
-                <Link to="/" className="text-sm text-primary-foreground/70 hover:text-primary-foreground transition-colors">
+                <Link to="/" className="text-sm text-primary-foreground/70 dark:text-slate-400 hover:text-primary-foreground dark:hover:text-white transition-colors">
                   {t("home")}
                 </Link>
               </li>
               <li>
-                <Link to="/auth" className="text-sm text-primary-foreground/70 hover:text-primary-foreground transition-colors">
+                <Link to="/auth" className="text-sm text-primary-foreground/70 dark:text-slate-400 hover:text-primary-foreground dark:hover:text-white transition-colors">
                   {t("station_owner_portal")}
                 </Link>
               </li>
               <li>
-                <Link to="/about" className="text-sm text-primary-foreground/70 hover:text-primary-foreground transition-colors">
+                <Link to="/about" className="text-sm text-primary-foreground/70 dark:text-slate-400 hover:text-primary-foreground dark:hover:text-white transition-colors">
                   {t("about_us")}
                 </Link>
               </li>
               <li>
-                <Link to="/contact" className="text-sm text-primary-foreground/70 hover:text-primary-foreground transition-colors">
+                <Link to="/contact" className="text-sm text-primary-foreground/70 dark:text-slate-400 hover:text-primary-foreground dark:hover:text-white transition-colors">
                   {t("contact_us")}
                 </Link>
               </li>
@@ -56,12 +56,12 @@ const Footer: React.FC = () => {
             </h3>
             <ul className="space-y-2">
               <li>
-                <Link to="/privacy" className="text-sm text-primary-foreground/70 hover:text-primary-foreground transition-colors">
+                <Link to="/privacy" className="text-sm text-primary-foreground/70 dark:text-slate-400 hover:text-primary-foreground dark:hover:text-white transition-colors">
                   {t("privacy_policy")}
                 </Link>
               </li>
               <li>
-                <Link to="/terms" className="text-sm text-primary-foreground/70 hover:text-primary-foreground transition-colors">
+                <Link to="/terms" className="text-sm text-primary-foreground/70 dark:text-slate-400 hover:text-primary-foreground dark:hover:text-white transition-colors">
                   {t("terms_of_use")}
                 </Link>
               </li>
@@ -69,7 +69,7 @@ const Footer: React.FC = () => {
           </div>
         </div>
 
-        <div className="mt-8 pt-6 border-t border-primary-foreground/10 text-center text-xs text-primary-foreground/50">
+        <div className="mt-8 pt-6 border-t border-primary-foreground/10 dark:border-slate-700 text-center text-xs text-primary-foreground/50 dark:text-slate-500">
           <p>© {year} {t("app_name")}. {t("all_rights_reserved")}</p>
         </div>
       </div>

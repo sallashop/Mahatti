@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { MapPin, Phone, CheckCircle, Clock, XCircle, Fuel, Zap, Info, Image } from "lucide-react";
+import { MapPin, Phone, CheckCircle, Clock, XCircle, Fuel, Zap, Info, Image, Navigation } from "lucide-react";
 import LocationPicker from "./LocationPicker";
 
 interface Station {
@@ -36,21 +36,21 @@ const VerificationBadge: React.FC<{ status: string; t: (k: string) => string }> 
   switch (status) {
     case "verified":
       return (
-        <Badge className="bg-green-500/15 text-green-600 dark:text-green-400 border border-green-500/30 gap-1 text-xs">
+        <Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 gap-1 text-[10px] font-semibold">
           <CheckCircle className="w-3 h-3" />
           {t("verified")}
         </Badge>
       );
     case "rejected":
       return (
-        <Badge className="bg-red-500/15 text-red-600 dark:text-red-400 border border-red-500/30 gap-1 text-xs">
+        <Badge className="bg-red-500/10 text-red-600 dark:text-red-400 border border-red-500/20 gap-1 text-[10px] font-semibold">
           <XCircle className="w-3 h-3" />
           {t("rejected")}
         </Badge>
       );
     default:
       return (
-        <Badge className="bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30 gap-1 text-xs">
+        <Badge className="bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 gap-1 text-[10px] font-semibold">
           <Clock className="w-3 h-3" />
           {t("pending")}
         </Badge>
@@ -71,42 +71,49 @@ const StationCard: React.FC<StationCardProps> = ({
 
   return (
     <>
-      <div className="group relative rounded-2xl overflow-hidden border border-border bg-card dark:bg-card transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
-        {/* Status indicator strip */}
-        <div className={`h-1.5 w-full ${station.is_active ? "bg-gradient-to-r from-green-400 to-green-600" : "bg-gradient-to-r from-red-400 to-red-600"}`} />
+      <div className="group relative rounded-2xl overflow-hidden bg-card dark:bg-card border border-border/60 dark:border-border/40 transition-all duration-300 hover:shadow-xl hover:shadow-primary/5 dark:hover:shadow-primary/10 hover:-translate-y-1">
+        {/* Top gradient bar */}
+        <div className={`h-1 w-full ${station.is_active ? "bg-gradient-to-r from-emerald-400 via-emerald-500 to-teal-500" : "bg-gradient-to-r from-red-400 via-red-500 to-rose-500"}`} />
 
         <div className="p-5 space-y-4">
-          {/* Header: Name + Status */}
+          {/* Header */}
           <div className="flex items-start justify-between gap-3">
-            <div className="flex-1 min-w-0">
-              <h3 className="font-bold text-foreground text-base leading-tight truncate">
-                {station.station_name}
-              </h3>
-              {station.station_number && (
-                <span className="text-xs text-muted-foreground mt-0.5 block">#{station.station_number}</span>
-              )}
-            </div>
-            <Badge
-              className={`shrink-0 text-[11px] font-bold px-2.5 py-1 ${
+            <div className="flex items-center gap-3 flex-1 min-w-0">
+              <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
                 station.is_active
-                  ? "bg-green-500/15 text-green-700 dark:text-green-400 border border-green-500/30"
-                  : "bg-red-500/15 text-red-700 dark:text-red-400 border border-red-500/30"
-              }`}
-            >
+                  ? "bg-emerald-500/10 dark:bg-emerald-500/15"
+                  : "bg-red-500/10 dark:bg-red-500/15"
+              }`}>
+                <Fuel className={`w-5 h-5 ${station.is_active ? "text-emerald-600 dark:text-emerald-400" : "text-red-600 dark:text-red-400"}`} />
+              </div>
+              <div className="min-w-0">
+                <h3 className="font-bold text-foreground text-[15px] leading-tight truncate">
+                  {station.station_name}
+                </h3>
+                {station.station_number && (
+                  <span className="text-[11px] text-muted-foreground">#{station.station_number}</span>
+                )}
+              </div>
+            </div>
+            <div className={`shrink-0 px-2.5 py-1 rounded-full text-[10px] font-bold ${
+              station.is_active
+                ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 ring-1 ring-emerald-500/20"
+                : "bg-red-500/10 text-red-700 dark:text-red-300 ring-1 ring-red-500/20"
+            }`}>
               {station.is_active ? t("working") : t("not_working")}
-            </Badge>
+            </div>
           </div>
 
-          {/* Info */}
-          <div className="space-y-1.5">
+          {/* Info rows */}
+          <div className="space-y-2">
             {station.city && (
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <div className="flex items-center gap-2.5 text-sm text-muted-foreground">
                 <MapPin className="w-3.5 h-3.5 text-primary shrink-0" />
-                <span className="truncate">{station.city}{station.address ? ` - ${station.address}` : ""}</span>
+                <span className="truncate">{station.city}{station.address ? ` — ${station.address}` : ""}</span>
               </div>
             )}
             {station.phone && (
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <div className="flex items-center gap-2.5 text-sm text-muted-foreground">
                 <Phone className="w-3.5 h-3.5 text-primary shrink-0" />
                 <span dir="ltr">{station.phone}</span>
               </div>
@@ -120,9 +127,9 @@ const StationCard: React.FC<StationCardProps> = ({
               <Badge
                 key={fuel}
                 variant="outline"
-                className="text-[11px] gap-1 border-primary/20 text-primary dark:text-primary"
+                className="text-[10px] gap-1 border-primary/15 dark:border-primary/25 text-primary font-semibold"
               >
-                <Fuel className="w-3 h-3" />
+                <Fuel className="w-2.5 h-2.5" />
                 {fuel === "benzine" ? t("benzine") : fuel === "diesel" ? t("diesel") : fuel}
               </Badge>
             ))}
@@ -133,7 +140,7 @@ const StationCard: React.FC<StationCardProps> = ({
             <Button
               size="sm"
               onClick={() => setShowDetails(true)}
-              className="gap-1.5 text-xs bg-primary text-primary-foreground hover:bg-primary/90"
+              className="gap-1.5 text-xs h-8 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 dark:bg-primary dark:text-primary-foreground dark:hover:bg-primary/80"
             >
               <Info className="w-3.5 h-3.5" />
               {t("station_details")}
@@ -144,10 +151,10 @@ const StationCard: React.FC<StationCardProps> = ({
                 variant="outline"
                 size="sm"
                 onClick={() => window.open(`https://www.google.com/maps/dir/?api=1&destination=${station.lat},${station.lng}`, '_blank')}
-                className="gap-1.5 text-xs border-border text-foreground dark:text-foreground hover:bg-muted"
+                className="gap-1.5 text-xs h-8 rounded-xl border-border text-foreground hover:bg-muted dark:text-foreground dark:hover:bg-muted"
               >
-                <MapPin className="w-3.5 h-3.5" />
-                {t("view_map")}
+                <Navigation className="w-3.5 h-3.5" />
+                {t("navigate")}
               </Button>
             )}
 
@@ -157,10 +164,10 @@ const StationCard: React.FC<StationCardProps> = ({
                   variant="outline"
                   size="sm"
                   onClick={onToggleActive}
-                  className={`gap-1 text-xs ${
+                  className={`gap-1 text-xs h-8 rounded-xl ${
                     station.is_active
-                      ? "border-red-500/30 text-red-600 dark:text-red-400 hover:bg-red-500/10"
-                      : "border-green-500/30 text-green-600 dark:text-green-400 hover:bg-green-500/10"
+                      ? "border-red-500/20 text-red-600 dark:text-red-400 hover:bg-red-500/10"
+                      : "border-emerald-500/20 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10"
                   }`}
                 >
                   <Zap className="w-3 h-3" />
@@ -170,7 +177,7 @@ const StationCard: React.FC<StationCardProps> = ({
                   variant="outline"
                   size="sm"
                   onClick={onEdit}
-                  className="gap-1 text-xs text-foreground dark:text-foreground"
+                  className="gap-1 text-xs h-8 rounded-xl text-foreground dark:text-foreground"
                 >
                   {t("edit_station")}
                 </Button>
@@ -178,7 +185,7 @@ const StationCard: React.FC<StationCardProps> = ({
                   variant="outline"
                   size="sm"
                   onClick={onDelete}
-                  className="gap-1 text-xs border-red-500/30 text-red-600 dark:text-red-400 hover:bg-red-500/10"
+                  className="gap-1 text-xs h-8 rounded-xl border-red-500/20 text-red-600 dark:text-red-400 hover:bg-red-500/10"
                 >
                   {t("delete")}
                 </Button>
@@ -193,7 +200,7 @@ const StationCard: React.FC<StationCardProps> = ({
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="font-black text-xl flex items-center gap-2">
-              <div className={`w-3 h-3 rounded-full ${station.is_active ? "bg-green-500" : "bg-red-500"}`} />
+              <div className={`w-3 h-3 rounded-full ${station.is_active ? "bg-emerald-500" : "bg-red-500"}`} />
               {station.station_name}
             </DialogTitle>
           </DialogHeader>
@@ -203,14 +210,14 @@ const StationCard: React.FC<StationCardProps> = ({
             <div className="flex flex-wrap gap-2">
               <Badge className={`font-semibold text-xs px-3 py-1 ${
                 station.is_active
-                  ? "bg-green-500/15 text-green-700 dark:text-green-400 border border-green-500/30"
-                  : "bg-red-500/15 text-red-700 dark:text-red-400 border border-red-500/30"
+                  ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20"
+                  : "bg-red-500/10 text-red-700 dark:text-red-300 border border-red-500/20"
               }`}>
                 {station.is_active ? t("working") : t("not_working")}
               </Badge>
               <VerificationBadge status={station.verification_status} t={t} />
               {station.fuel_types?.map((fuel) => (
-                <Badge key={fuel} variant="outline" className="text-xs gap-1 border-primary/30 text-primary">
+                <Badge key={fuel} variant="outline" className="text-xs gap-1 border-primary/20 text-primary">
                   <Fuel className="w-3 h-3" />
                   {fuel === "benzine" ? t("benzine") : fuel === "diesel" ? t("diesel") : fuel}
                 </Badge>
@@ -218,7 +225,7 @@ const StationCard: React.FC<StationCardProps> = ({
             </div>
 
             {/* Info Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-muted/40 rounded-xl p-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-muted/40 dark:bg-muted/20 rounded-xl p-4">
               {station.station_number && (
                 <div>
                   <p className="text-xs text-muted-foreground mb-1">{t("station_number")}</p>
@@ -253,6 +260,14 @@ const StationCard: React.FC<StationCardProps> = ({
                   {t("location")}
                 </p>
                 <LocationPicker lat={station.lat} lng={station.lng} readOnly label={station.station_name} />
+                <Button
+                  size="sm"
+                  className="mt-2 gap-1.5 text-xs"
+                  onClick={() => window.open(`https://www.google.com/maps/dir/?api=1&destination=${station.lat},${station.lng}`, '_blank')}
+                >
+                  <Navigation className="w-3.5 h-3.5" />
+                  {t("navigate")}
+                </Button>
               </div>
             )}
 
