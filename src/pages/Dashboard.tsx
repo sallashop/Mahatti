@@ -85,7 +85,7 @@ const Dashboard: React.FC = () => {
             </div>
             <Button
               onClick={() => { setEditStation(null); setShowForm(true); }}
-              className="accent-gradient text-primary font-bold border-0 shadow-lg hover:opacity-90 gap-2"
+              className="accent-gradient !text-accent-foreground font-bold border-0 shadow-lg hover:opacity-90 gap-2"
             >
               <Plus className="w-4 h-4" />
               {t("add_station")}
@@ -123,7 +123,7 @@ const Dashboard: React.FC = () => {
             <p className="text-muted-foreground text-lg mb-4">{t("no_stations")}</p>
             <Button
               onClick={() => { setEditStation(null); setShowForm(true); }}
-              className="accent-gradient text-primary font-bold border-0"
+              className="accent-gradient !text-accent-foreground font-bold border-0"
             >
               <Plus className="w-4 h-4 me-2" />
               {t("register_station")}

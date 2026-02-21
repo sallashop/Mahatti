@@ -15,26 +15,46 @@ const PWAInstallPrompt: React.FC = () => {
   const [dismissed, setDismissed] = useState(false);
 
   useEffect(() => {
-    const dismissed = localStorage.getItem("pwa-dismissed");
-    if (dismissed) return;
+    const wasDismissed = localStorage.getItem("pwa-dismissed");
+    if (wasDismissed) {
+      setDismissed(true);
+      return;
+    }
+
+    // Check if already installed as PWA
+    const isStandalone = window.matchMedia("(display-mode: standalone)").matches
+      || (navigator as any).standalone === true;
+    if (isStandalone) return;
 
     const handler = (e: Event) => {
       e.preventDefault();
       setDeferredPrompt(e as BeforeInstallPromptEvent);
-      setTimeout(() => setShowPrompt(true), 3000);
     };
 
     window.addEventListener("beforeinstallprompt", handler);
-    return () => window.removeEventListener("beforeinstallprompt", handler);
+
+    // Show the prompt after 3 seconds regardless (for iOS & browsers that don't fire the event)
+    const timer = setTimeout(() => setShowPrompt(true), 3000);
+
+    return () => {
+      window.removeEventListener("beforeinstallprompt", handler);
+      clearTimeout(timer);
+    };
   }, []);
 
   const handleInstall = async () => {
-    if (!deferredPrompt) return;
-    await deferredPrompt.prompt();
-    const { outcome } = await deferredPrompt.userChoice;
-    if (outcome === "accepted") {
+    if (deferredPrompt) {
+      await deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      if (outcome === "accepted") {
+        setShowPrompt(false);
+        setDeferredPrompt(null);
+      }
+    } else {
+      // For iOS / browsers without native install - just dismiss with info
       setShowPrompt(false);
-      setDeferredPrompt(null);
+      setDismissed(true);
+      localStorage.setItem("pwa-dismissed", "true");
     }
   };
 
@@ -60,7 +80,7 @@ const PWAInstallPrompt: React.FC = () => {
               <Button
                 size="sm"
                 onClick={handleInstall}
-                className="flex-1 accent-gradient text-primary font-bold border-0 hover:opacity-90 gap-1 text-xs"
+                className="flex-1 accent-gradient !text-accent-foreground font-bold border-0 hover:opacity-90 gap-1 text-xs"
               >
                 <Download className="w-3 h-3" />
                 {t("pwa_install_btn")}
