@@ -9,13 +9,74 @@ import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
-import { ShieldCheck, Users, Fuel, Activity, CheckCircle, Clock, Search, XCircle } from "lucide-react";
+import { ShieldCheck, Users, Fuel, Activity, CheckCircle, Clock, Search, XCircle, Mail, Lock, Loader2 } from "lucide-react";
+import logo from "@/assets/logo.png";
+
+const AdminLogin: React.FC<{ onLogin: () => void }> = ({ onLogin }) => {
+  const { t } = useTranslation();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) {
+      toast.error(error.message);
+    } else {
+      onLogin();
+    }
+    setLoading(false);
+  };
+
+  return (
+    <div className="min-h-screen hero-gradient flex items-center justify-center p-4">
+      <div className="w-full max-w-md">
+        <div className="flex flex-col items-center mb-8">
+          <div className="relative mb-4">
+            <div className="absolute inset-0 rounded-full bg-amber-400/40 blur-2xl scale-150" />
+            <img src={logo} alt={t("app_name")} className="w-16 h-16 rounded-full relative z-10 shadow-2xl" />
+          </div>
+          <h1 className="text-2xl font-black text-white">{t("admin")}</h1>
+          <p className="text-blue-200 text-sm mt-1">{t("dashboard")}</p>
+        </div>
+        <div className="bg-card rounded-3xl shadow-2xl overflow-hidden border border-border/50 p-6">
+          <div className="flex items-center gap-2 mb-6 justify-center">
+            <ShieldCheck className="w-5 h-5 text-primary" />
+            <span className="font-bold text-foreground">{t("login")}</span>
+          </div>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-1.5">
+              <Label className="font-semibold">{t("email")}</Label>
+              <div className="relative">
+                <Mail className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} className="ps-10 bg-background" placeholder="admin@email.com" dir="ltr" />
+              </div>
+            </div>
+            <div className="space-y-1.5">
+              <Label className="font-semibold">{t("password")}</Label>
+              <div className="relative">
+                <Lock className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input type="password" required value={password} onChange={(e) => setPassword(e.target.value)} className="ps-10 bg-background" placeholder="••••••••" />
+              </div>
+            </div>
+            <Button type="submit" className="w-full accent-gradient !text-accent-foreground font-bold border-0 h-11 hover:opacity-90" disabled={loading}>
+              {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : t("login")}
+            </Button>
+          </form>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const AdminDashboard: React.FC = () => {
   const { t } = useTranslation();
-  const { isAdmin, loading: authLoading } = useAuth();
+  const { isAdmin, user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const [stations, setStations] = useState<any[]>([]);
   const [profiles, setProfiles] = useState<any[]>([]);
@@ -24,12 +85,13 @@ const AdminDashboard: React.FC = () => {
   const [deleteStation, setDeleteStation] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
+  // If logged in but not admin, redirect home
   useEffect(() => {
     if (authLoading) return;
-    if (!isAdmin) {
+    if (user && !isAdmin) {
       navigate("/", { replace: true });
     }
-  }, [authLoading]);
+  }, [authLoading, user, isAdmin]);
 
   useEffect(() => {
     if (isAdmin) {
@@ -86,6 +148,11 @@ const AdminDashboard: React.FC = () => {
   ];
 
   if (authLoading) return null;
+
+  // Show admin login if not logged in
+  if (!user) {
+    return <AdminLogin onLogin={() => window.location.reload()} />;
+  }
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
