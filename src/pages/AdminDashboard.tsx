@@ -25,10 +25,11 @@ const AdminDashboard: React.FC = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!authLoading && !isAdmin) {
-      navigate("/");
+    if (authLoading) return;
+    if (!isAdmin) {
+      navigate("/", { replace: true });
     }
-  }, [isAdmin, authLoading, navigate]);
+  }, [authLoading]);
 
   useEffect(() => {
     if (isAdmin) {
