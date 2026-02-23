@@ -36,10 +36,13 @@ const VerificationBadge: React.FC<{ status: string; t: (k: string) => string }> 
   switch (status) {
     case "verified":
       return (
-        <Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 gap-1 text-[10px] font-semibold">
-          <CheckCircle className="w-3 h-3" />
+        <span className="inline-flex items-center gap-1 text-[11px] font-bold text-primary">
+          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none">
+            <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" fill="currentColor" />
+            <path d="M9.5 12.5L11 14L14.5 10.5" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
           {t("verified")}
-        </Badge>
+        </span>
       );
     case "rejected":
       return (

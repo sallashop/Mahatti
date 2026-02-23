@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { Loader2, Fuel, Mail, Lock, User, Phone } from "lucide-react";
+import { Loader2, Fuel, Mail, Lock, User, Phone, Eye, EyeOff } from "lucide-react";
 import logo from "@/assets/logo.png";
 
 const Auth: React.FC = () => {
@@ -18,6 +18,11 @@ const Auth: React.FC = () => {
   const [searchParams] = useSearchParams();
   const defaultTab = searchParams.get("tab") || "login";
   const [loading, setLoading] = useState(false);
+
+  const [showPassword, setShowPassword] = useState(false);
+  const [showForgot, setShowForgot] = useState(false);
+  const [forgotEmail, setForgotEmail] = useState("");
+  const [forgotLoading, setForgotLoading] = useState(false);
 
   const [loginForm, setLoginForm] = useState({ email: "", password: "" });
   const [registerForm, setRegisterForm] = useState({
@@ -42,6 +47,20 @@ const Auth: React.FC = () => {
       navigate("/dashboard");
     }
     setLoading(false);
+  };
+
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setForgotLoading(true);
+    const { error } = await supabase.auth.resetPasswordForEmail(forgotEmail, {
+      redirectTo: `${window.location.origin}/reset-password`,
+    });
+    if (error) toast.error(error.message);
+    else {
+      toast.success(t("reset_email_sent"));
+      setShowForgot(false);
+    }
+    setForgotLoading(false);
   };
 
   const handleRegister = async (e: React.FormEvent) => {
@@ -111,13 +130,20 @@ const Auth: React.FC = () => {
                   <div className="relative">
                     <Lock className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                     <Input
-                      type="password"
+                      type={showPassword ? "text" : "password"}
                       required
                       value={loginForm.password}
                       onChange={(e) => setLoginForm((p) => ({ ...p, password: e.target.value }))}
-                      className="ps-10 bg-background"
+                      className="ps-10 pe-10 bg-background"
                       placeholder="••••••••"
                     />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute end-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                    >
+                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
                   </div>
                 </div>
                 <Button
@@ -127,7 +153,39 @@ const Auth: React.FC = () => {
                 >
                   {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : t("login")}
                 </Button>
+                <button
+                  type="button"
+                  onClick={() => setShowForgot(true)}
+                  className="w-full text-center text-sm text-primary hover:underline mt-2"
+                >
+                  {t("forgot_password")}
+                </button>
               </form>
+              {/* Forgot Password Modal */}
+              {showForgot && (
+                <div className="mt-4 p-4 bg-muted/50 rounded-xl space-y-3">
+                  <p className="text-sm text-muted-foreground">{t("forgot_password_desc")}</p>
+                  <form onSubmit={handleForgotPassword} className="space-y-3">
+                    <Input
+                      type="email"
+                      required
+                      value={forgotEmail}
+                      onChange={(e) => setForgotEmail(e.target.value)}
+                      placeholder="example@email.com"
+                      dir="ltr"
+                      className="bg-background"
+                    />
+                    <div className="flex gap-2">
+                      <Button type="submit" size="sm" disabled={forgotLoading} className="flex-1">
+                        {forgotLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : t("send_reset_link")}
+                      </Button>
+                      <Button type="button" size="sm" variant="outline" onClick={() => setShowForgot(false)}>
+                        {t("cancel")}
+                      </Button>
+                    </div>
+                  </form>
+                </div>
+              )}
             </TabsContent>
 
             {/* Register */}
@@ -179,14 +237,21 @@ const Auth: React.FC = () => {
                   <div className="relative">
                     <Lock className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                     <Input
-                      type="password"
+                      type={showPassword ? "text" : "password"}
                       required
                       minLength={6}
                       value={registerForm.password}
                       onChange={(e) => setRegisterForm((p) => ({ ...p, password: e.target.value }))}
-                      className="ps-10 bg-background"
+                      className="ps-10 pe-10 bg-background"
                       placeholder="••••••••"
                     />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute end-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                    >
+                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
                   </div>
                 </div>
                 <Button
