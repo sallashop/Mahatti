@@ -1,11 +1,14 @@
-import React from "react";
+import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
+import { Heart } from "lucide-react";
 import logo from "@/assets/logo.png";
+import DonationDialog from "./DonationDialog";
 
 const Footer: React.FC = () => {
   const { t } = useTranslation();
   const year = new Date().getFullYear();
+  const [showDonation, setShowDonation] = useState(false);
 
   return (
     <footer className="bg-primary dark:bg-[hsl(220,50%,8%)] text-primary-foreground dark:text-slate-300 mt-12">
@@ -69,10 +72,21 @@ const Footer: React.FC = () => {
           </div>
         </div>
 
-        <div className="mt-8 pt-6 border-t border-primary-foreground/10 dark:border-slate-700 text-center text-xs text-primary-foreground/50 dark:text-slate-500">
-          <p>© {year} {t("app_name")}. {t("all_rights_reserved")}</p>
+        {/* Donate Button */}
+        <div className="mt-8 pt-6 border-t border-primary-foreground/10 dark:border-slate-700 flex flex-col items-center gap-3">
+          <button
+            onClick={() => setShowDonation(true)}
+            className="flex items-center gap-2 px-4 py-2 rounded-full bg-primary-foreground/10 hover:bg-primary-foreground/20 transition-colors text-sm text-primary-foreground font-semibold"
+          >
+            <Heart className="w-4 h-4 text-red-400" />
+            {t("donate_btn")}
+          </button>
+          <p className="text-xs text-primary-foreground/50 dark:text-slate-500">
+            © {year} {t("app_name")}. {t("all_rights_reserved")}
+          </p>
         </div>
       </div>
+      <DonationDialog open={showDonation} onOpenChange={setShowDonation} />
     </footer>
   );
 };

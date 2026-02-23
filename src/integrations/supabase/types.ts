@@ -44,8 +44,10 @@ export type Database = {
       stations: {
         Row: {
           address: string | null
+          benzine_available: boolean | null
           city: string | null
           created_at: string
+          diesel_available: boolean | null
           fuel_types: string[] | null
           id: string
           is_active: boolean | null
@@ -63,8 +65,10 @@ export type Database = {
         }
         Insert: {
           address?: string | null
+          benzine_available?: boolean | null
           city?: string | null
           created_at?: string
+          diesel_available?: boolean | null
           fuel_types?: string[] | null
           id?: string
           is_active?: boolean | null
@@ -82,8 +86,10 @@ export type Database = {
         }
         Update: {
           address?: string | null
+          benzine_available?: boolean | null
           city?: string | null
           created_at?: string
+          diesel_available?: boolean | null
           fuel_types?: string[] | null
           id?: string
           is_active?: boolean | null

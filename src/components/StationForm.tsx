@@ -32,8 +32,10 @@ const StationForm: React.FC<StationFormProps> = ({ station, onSuccess, onCancel 
     lat: station?.lat || 0,
     lng: station?.lng || 0,
     fuel_types: station?.fuel_types || [] as string[],
-    passport_image_url: station?.passport_image_url || "",   // station photo
-    license_image_url: station?.license_image_url || "",     // station license
+    passport_image_url: station?.passport_image_url || "",
+    license_image_url: station?.license_image_url || "",
+    benzine_available: station?.benzine_available ?? true,
+    diesel_available: station?.diesel_available ?? true,
   });
 
   const handleFuelTypeChange = (type: string, checked: boolean) => {
@@ -179,6 +181,35 @@ const StationForm: React.FC<StationFormProps> = ({ station, onSuccess, onCancel 
               <span className="font-medium text-foreground">{t(type)}</span>
             </label>
           ))}
+        </div>
+      </div>
+
+      {/* Fuel Availability */}
+      <div className="space-y-2">
+        <Label className="font-semibold">{t("fuel_availability")}</Label>
+        <div className="grid grid-cols-2 gap-3">
+          {formData.fuel_types.includes("benzine") && (
+            <label className="flex items-center gap-2 cursor-pointer">
+              <Checkbox
+                checked={formData.benzine_available}
+                onCheckedChange={(c) => setFormData(p => ({ ...p, benzine_available: c as boolean }))}
+              />
+              <span className={`text-sm font-medium ${formData.benzine_available ? "text-emerald-600" : "text-red-500"}`}>
+                {formData.benzine_available ? t("benzine_available") : t("benzine_unavailable")}
+              </span>
+            </label>
+          )}
+          {formData.fuel_types.includes("diesel") && (
+            <label className="flex items-center gap-2 cursor-pointer">
+              <Checkbox
+                checked={formData.diesel_available}
+                onCheckedChange={(c) => setFormData(p => ({ ...p, diesel_available: c as boolean }))}
+              />
+              <span className={`text-sm font-medium ${formData.diesel_available ? "text-emerald-600" : "text-red-500"}`}>
+                {formData.diesel_available ? t("diesel_available") : t("diesel_unavailable")}
+              </span>
+            </label>
+          )}
         </div>
       </div>
 
