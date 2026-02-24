@@ -5,14 +5,16 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import StationCard from "@/components/StationCard";
+import StationForm from "@/components/StationForm";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
-import { ShieldCheck, Users, Fuel, Activity, CheckCircle, Clock, Search, XCircle, Mail, Lock, Loader2 } from "lucide-react";
+import { ShieldCheck, Users, Fuel, Activity, CheckCircle, Clock, Search, XCircle, Mail, Lock, Loader2, Heart, Settings, Pencil } from "lucide-react";
 import logo from "@/assets/logo.png";
 
 const AdminLogin: React.FC<{ onLogin: () => void }> = ({ onLogin }) => {
@@ -83,9 +85,15 @@ const AdminDashboard: React.FC = () => {
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState<"all" | "pending" | "verified" | "rejected">("all");
   const [deleteStation, setDeleteStation] = useState<any>(null);
+  const [editStation, setEditStation] = useState<any>(null);
+  const [showEditForm, setShowEditForm] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  // If logged in but not admin, redirect home
+  // Donation settings
+  const [donationEnabled, setDonationEnabled] = useState(true);
+  const [donationAccount, setDonationAccount] = useState("");
+  const [savingSettings, setSavingSettings] = useState(false);
+
   useEffect(() => {
     if (authLoading) return;
     if (user && !isAdmin) {
@@ -96,6 +104,7 @@ const AdminDashboard: React.FC = () => {
   useEffect(() => {
     if (isAdmin) {
       fetchAll();
+      fetchSettings();
     }
   }, [isAdmin]);
 
@@ -108,6 +117,29 @@ const AdminDashboard: React.FC = () => {
     setStations(stationsRes.data || []);
     setProfiles(profilesRes.data || []);
     setLoading(false);
+  };
+
+  const fetchSettings = async () => {
+    const { data } = await supabase
+      .from("app_settings")
+      .select("key, value")
+      .in("key", ["donation_enabled", "donation_account"]);
+    if (data) {
+      const enabled = data.find(d => d.key === "donation_enabled");
+      const account = data.find(d => d.key === "donation_account");
+      if (enabled) setDonationEnabled(enabled.value === "true");
+      if (account) setDonationAccount(account.value);
+    }
+  };
+
+  const handleSaveSettings = async () => {
+    setSavingSettings(true);
+    await Promise.all([
+      supabase.from("app_settings").update({ value: donationEnabled ? "true" : "false" }).eq("key", "donation_enabled"),
+      supabase.from("app_settings").update({ value: donationAccount }).eq("key", "donation_account"),
+    ]);
+    toast.success(t("settings_saved"));
+    setSavingSettings(false);
   };
 
   const handleVerify = async (stationId: string, status: "verified" | "rejected") => {
@@ -149,7 +181,6 @@ const AdminDashboard: React.FC = () => {
 
   if (authLoading) return null;
 
-  // Show admin login if not logged in
   if (!user) {
     return <AdminLogin onLogin={() => window.location.reload()} />;
   }
@@ -185,6 +216,37 @@ const AdminDashboard: React.FC = () => {
 
       {/* Content */}
       <div className="container mx-auto px-4 py-6 space-y-4">
+        {/* Donation Settings */}
+        <div className="bg-card rounded-2xl border border-border p-4 space-y-3">
+          <div className="flex items-center gap-2 mb-2">
+            <Heart className="w-4 h-4 text-red-500" />
+            <h3 className="font-bold text-foreground text-sm">{t("donation_settings")}</h3>
+          </div>
+          <div className="flex items-center justify-between">
+            <Label className="font-semibold text-sm">
+              {donationEnabled ? t("donation_enabled") : t("donation_disabled")}
+            </Label>
+            <Switch checked={donationEnabled} onCheckedChange={setDonationEnabled} />
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-xs font-semibold">{t("account_number")}</Label>
+            <Input
+              value={donationAccount}
+              onChange={(e) => setDonationAccount(e.target.value)}
+              dir="ltr"
+              className="bg-background font-mono text-sm"
+            />
+          </div>
+          <Button
+            size="sm"
+            onClick={handleSaveSettings}
+            disabled={savingSettings}
+            className="accent-gradient !text-accent-foreground font-bold border-0 hover:opacity-90 text-xs"
+          >
+            {savingSettings ? <Loader2 className="w-3 h-3 animate-spin" /> : t("save_settings")}
+          </Button>
+        </div>
+
         {/* Filters */}
         <div className="bg-card rounded-2xl border border-border p-4 space-y-3">
           <div className="relative">
@@ -226,6 +288,8 @@ const AdminDashboard: React.FC = () => {
               <div key={station.id} className="space-y-2">
                 <StationCard
                   station={station}
+                  showActions
+                  onEdit={() => { setEditStation(station); setShowEditForm(true); }}
                   onDelete={() => setDeleteStation(station)}
                 />
                 {/* Verification Actions */}
@@ -269,6 +333,23 @@ const AdminDashboard: React.FC = () => {
           </div>
         )}
       </div>
+
+      {/* Edit Station Dialog */}
+      <Dialog open={showEditForm} onOpenChange={setShowEditForm}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="font-black text-xl flex items-center gap-2">
+              <Pencil className="w-5 h-5 text-primary" />
+              {t("edit_station")}
+            </DialogTitle>
+          </DialogHeader>
+          <StationForm
+            station={editStation}
+            onSuccess={() => { setShowEditForm(false); setEditStation(null); fetchAll(); }}
+            onCancel={() => { setShowEditForm(false); setEditStation(null); }}
+          />
+        </DialogContent>
+      </Dialog>
 
       {/* Delete Dialog */}
       <AlertDialog open={!!deleteStation} onOpenChange={() => setDeleteStation(null)}>

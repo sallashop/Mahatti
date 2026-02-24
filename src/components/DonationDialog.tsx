@@ -8,20 +8,20 @@ import { toast } from "sonner";
 interface DonationDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  accountNumber?: string;
 }
 
-const ACCOUNT_NUMBER = "LY38005101101012893830015";
-
 const maskAccount = (acc: string) => {
+  if (acc.length <= 8) return acc;
   return acc.slice(0, 4) + " •••• •••• •••• •••• " + acc.slice(-4);
 };
 
-const DonationDialog: React.FC<DonationDialogProps> = ({ open, onOpenChange }) => {
+const DonationDialog: React.FC<DonationDialogProps> = ({ open, onOpenChange, accountNumber = "LY38005101101012893830015" }) => {
   const { t } = useTranslation();
   const [copied, setCopied] = useState(false);
 
   const handleCopy = async () => {
-    await navigator.clipboard.writeText(ACCOUNT_NUMBER);
+    await navigator.clipboard.writeText(accountNumber);
     setCopied(true);
     toast.success(t("copied"));
     setTimeout(() => setCopied(false), 2000);
@@ -43,7 +43,7 @@ const DonationDialog: React.FC<DonationDialogProps> = ({ open, onOpenChange }) =
           <div className="bg-muted/50 rounded-xl p-4 space-y-3">
             <p className="text-xs text-muted-foreground font-semibold">{t("donate_account")}</p>
             <p className="font-mono text-sm text-foreground tracking-wide" dir="ltr">
-              {maskAccount(ACCOUNT_NUMBER)}
+              {maskAccount(accountNumber)}
             </p>
             <Button
               onClick={handleCopy}

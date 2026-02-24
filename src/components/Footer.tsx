@@ -1,14 +1,33 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 import { Heart } from "lucide-react";
 import logo from "@/assets/logo.png";
 import DonationDialog from "./DonationDialog";
+import { supabase } from "@/integrations/supabase/client";
 
 const Footer: React.FC = () => {
   const { t } = useTranslation();
   const year = new Date().getFullYear();
   const [showDonation, setShowDonation] = useState(false);
+  const [donationEnabled, setDonationEnabled] = useState(true);
+  const [donationAccount, setDonationAccount] = useState("LY38005101101012893830015");
+
+  useEffect(() => {
+    const fetchSettings = async () => {
+      const { data } = await supabase
+        .from("app_settings")
+        .select("key, value")
+        .in("key", ["donation_enabled", "donation_account"]);
+      if (data) {
+        const enabled = data.find(d => d.key === "donation_enabled");
+        const account = data.find(d => d.key === "donation_account");
+        if (enabled) setDonationEnabled(enabled.value === "true");
+        if (account) setDonationAccount(account.value);
+      }
+    };
+    fetchSettings();
+  }, []);
 
   return (
     <footer className="bg-primary dark:bg-[hsl(220,50%,8%)] text-primary-foreground dark:text-slate-300 mt-12">
@@ -74,19 +93,21 @@ const Footer: React.FC = () => {
 
         {/* Donate Button */}
         <div className="mt-8 pt-6 border-t border-primary-foreground/10 dark:border-slate-700 flex flex-col items-center gap-3">
-          <button
-            onClick={() => setShowDonation(true)}
-            className="flex items-center gap-2 px-4 py-2 rounded-full bg-primary-foreground/10 hover:bg-primary-foreground/20 transition-colors text-sm text-primary-foreground font-semibold"
-          >
-            <Heart className="w-4 h-4 text-red-400" />
-            {t("donate_btn")}
-          </button>
+          {donationEnabled && (
+            <button
+              onClick={() => setShowDonation(true)}
+              className="flex items-center gap-2 px-4 py-2 rounded-full bg-primary-foreground/10 hover:bg-primary-foreground/20 transition-colors text-sm text-primary-foreground dark:text-slate-200 font-semibold"
+            >
+              <Heart className="w-4 h-4 text-red-400" />
+              {t("donate_btn")}
+            </button>
+          )}
           <p className="text-xs text-primary-foreground/50 dark:text-slate-500">
             © {year} {t("app_name")}. {t("all_rights_reserved")}
           </p>
         </div>
       </div>
-      <DonationDialog open={showDonation} onOpenChange={setShowDonation} />
+      <DonationDialog open={showDonation} onOpenChange={setShowDonation} accountNumber={donationAccount} />
     </footer>
   );
 };

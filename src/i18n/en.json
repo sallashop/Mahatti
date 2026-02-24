@@ -141,5 +141,14 @@
   "diesel_unavailable": "Diesel Unavailable",
   "fuel_availability": "Fuel Availability",
   "available": "Available",
-  "unavailable": "Unavailable"
+  "unavailable": "Unavailable",
+  "install_app": "Install App",
+  "donation_settings": "Donation Settings",
+  "donation_enabled": "Donations Enabled",
+  "donation_disabled": "Donations Disabled",
+  "account_number": "Account Number",
+  "save_settings": "Save Settings",
+  "settings_saved": "Settings saved ✓",
+  "admin_edit_station": "Edit Station",
+  "admin_delete_station": "Delete Station"
 }
