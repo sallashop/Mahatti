@@ -141,5 +141,14 @@
   "diesel_unavailable": "الديزل غير متوفر",
   "fuel_availability": "توفر الوقود",
   "available": "متوفر",
-  "unavailable": "غير متوفر"
+  "unavailable": "غير متوفر",
+  "install_app": "تثبيت التطبيق",
+  "donation_settings": "إعدادات التبرع",
+  "donation_enabled": "التبرعات مفعّلة",
+  "donation_disabled": "التبرعات معطّلة",
+  "account_number": "رقم الحساب",
+  "save_settings": "حفظ الإعدادات",
+  "settings_saved": "تم حفظ الإعدادات ✓",
+  "admin_edit_station": "تعديل المحطة",
+  "admin_delete_station": "حذف المحطة"
 }

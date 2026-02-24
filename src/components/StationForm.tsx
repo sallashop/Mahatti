@@ -78,12 +78,13 @@ const StationForm: React.FC<StationFormProps> = ({ station, onSuccess, onCancel 
     setLoading(true);
 
     try {
-      const payload = { ...formData, owner_id: user.id };
-
       if (station?.id) {
-        const { error } = await supabase.from("stations").update(payload).eq("id", station.id);
+        // When editing, don't change owner_id
+        const { owner_id, ...updatePayload } = { ...formData, owner_id: user.id };
+        const { error } = await supabase.from("stations").update(formData).eq("id", station.id);
         if (error) throw error;
       } else {
+        const payload = { ...formData, owner_id: user.id };
         const { error } = await supabase.from("stations").insert(payload);
         if (error) throw error;
       }

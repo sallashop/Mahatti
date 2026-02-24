@@ -21,8 +21,14 @@ import {
   Sun,
   Home,
   UserCog,
+  Download,
 } from "lucide-react";
 import logo from "@/assets/logo.png";
+
+interface BeforeInstallPromptEvent extends Event {
+  prompt: () => Promise<void>;
+  userChoice: Promise<{ outcome: "accepted" | "dismissed" }>;
+}
 
 const Navbar: React.FC = () => {
   const { t } = useTranslation();
@@ -31,6 +37,8 @@ const Navbar: React.FC = () => {
   const navigate = useNavigate();
   const [isDark, setIsDark] = useState(false);
   const [open, setOpen] = useState(false);
+  const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
+  const [canInstall, setCanInstall] = useState(false);
 
   useEffect(() => {
     const saved = localStorage.getItem("theme");
@@ -39,6 +47,32 @@ const Navbar: React.FC = () => {
     setIsDark(dark);
     document.documentElement.classList.toggle("dark", dark);
   }, []);
+
+  useEffect(() => {
+    const isStandalone = window.matchMedia("(display-mode: standalone)").matches
+      || (navigator as any).standalone === true;
+    if (isStandalone) return;
+
+    const handler = (e: Event) => {
+      e.preventDefault();
+      setDeferredPrompt(e as BeforeInstallPromptEvent);
+      setCanInstall(true);
+    };
+    window.addEventListener("beforeinstallprompt", handler);
+    return () => window.removeEventListener("beforeinstallprompt", handler);
+  }, []);
+
+  const handleInstallApp = async () => {
+    if (deferredPrompt) {
+      await deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      if (outcome === "accepted") {
+        setCanInstall(false);
+        setDeferredPrompt(null);
+      }
+    }
+    setOpen(false);
+  };
 
   const toggleTheme = () => {
     const next = !isDark;
@@ -197,6 +231,22 @@ const Navbar: React.FC = () => {
                       >
                         <Fuel className="w-4 h-4" />
                         {t("station_owner_portal")}
+                      </button>
+                    </SheetClose>
+                  </>
+                )}
+
+                {/* Install App */}
+                {canInstall && (
+                  <>
+                    <div className="border-t border-border my-2" />
+                    <SheetClose asChild>
+                      <button
+                        onClick={handleInstallApp}
+                        className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-foreground hover:bg-muted transition-colors text-sm font-semibold"
+                      >
+                        <Download className="w-4 h-4 text-primary" />
+                        {t("install_app")}
                       </button>
                     </SheetClose>
                   </>
