@@ -150,5 +150,10 @@
   "save_settings": "حفظ الإعدادات",
   "settings_saved": "تم حفظ الإعدادات ✓",
   "admin_edit_station": "تعديل المحطة",
-  "admin_delete_station": "حذف المحطة"
+  "admin_delete_station": "حذف المحطة",
+  "show_number_to_visitors": "إظهار رقم المحطة للزوار",
+  "show_phone_to_visitors": "إظهار رقم الهاتف كاملاً للزوار",
+  "favorites": "المفضلة",
+  "filter_by_city": "تصفية حسب المدينة",
+  "all_cities": "كل المدن"
 }
