@@ -79,6 +79,7 @@ export type Database = {
           owner_id: string
           passport_image_url: string | null
           phone: string | null
+          show_station_number: boolean | null
           station_name: string
           station_number: string | null
           updated_at: string
@@ -100,6 +101,7 @@ export type Database = {
           owner_id: string
           passport_image_url?: string | null
           phone?: string | null
+          show_station_number?: boolean | null
           station_name: string
           station_number?: string | null
           updated_at?: string
@@ -121,6 +123,7 @@ export type Database = {
           owner_id?: string
           passport_image_url?: string | null
           phone?: string | null
+          show_station_number?: boolean | null
           station_name?: string
           station_number?: string | null
           updated_at?: string
