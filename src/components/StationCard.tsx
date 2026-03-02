@@ -3,8 +3,9 @@ import { useTranslation } from "react-i18next";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { MapPin, Phone, CheckCircle, Clock, XCircle, Fuel, Zap, Info, Image, Navigation } from "lucide-react";
+import { MapPin, Phone, CheckCircle, Clock, XCircle, Fuel, Zap, Info, Image, Navigation, Heart, Droplets } from "lucide-react";
 import LocationPicker from "./LocationPicker";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface Station {
   id: string;
@@ -21,6 +22,10 @@ interface Station {
   lng?: number;
   passport_image_url?: string;
   license_image_url?: string;
+  owner_id?: string;
+  show_station_number?: boolean;
+  benzine_available?: boolean;
+  diesel_available?: boolean;
 }
 
 interface StationCardProps {
@@ -30,6 +35,8 @@ interface StationCardProps {
   onToggleActive?: () => void;
   onEdit?: () => void;
   onDelete?: () => void;
+  isFavorite?: boolean;
+  onToggleFavorite?: () => void;
 }
 
 const VerificationBadge: React.FC<{ status: string; t: (k: string) => string }> = ({ status, t }) => {
@@ -68,9 +75,20 @@ const StationCard: React.FC<StationCardProps> = ({
   onToggleActive,
   onEdit,
   onDelete,
+  isFavorite,
+  onToggleFavorite,
 }) => {
   const { t } = useTranslation();
+  const { user, isAdmin } = useAuth();
   const [showDetails, setShowDetails] = useState(false);
+
+  const isOwnerOrAdmin = user && (user.id === station.owner_id || isAdmin);
+  const shouldShowPhone = station.show_station_number !== false || isOwnerOrAdmin;
+
+  const maskPhone = (phone: string) => {
+    if (phone.length <= 4) return "****";
+    return phone.slice(0, -4).replace(/./g, "*") + phone.slice(-4);
+  };
 
   return (
     <>
@@ -98,12 +116,19 @@ const StationCard: React.FC<StationCardProps> = ({
                 )}
               </div>
             </div>
-            <div className={`shrink-0 px-2.5 py-1 rounded-full text-[10px] font-bold ${
-              station.is_active
-                ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 ring-1 ring-emerald-500/20"
-                : "bg-red-500/10 text-red-700 dark:text-red-300 ring-1 ring-red-500/20"
-            }`}>
-              {station.is_active ? t("working") : t("not_working")}
+            <div className="flex items-center gap-1.5 shrink-0">
+              {onToggleFavorite && (
+                <button onClick={onToggleFavorite} className="p-1.5 rounded-lg hover:bg-muted transition-colors">
+                  <Heart className={`w-4 h-4 ${isFavorite ? "fill-red-500 text-red-500" : "text-muted-foreground"}`} />
+                </button>
+              )}
+              <div className={`px-2.5 py-1 rounded-full text-[10px] font-bold ${
+                station.is_active
+                  ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 ring-1 ring-emerald-500/20"
+                  : "bg-red-500/10 text-red-700 dark:text-red-300 ring-1 ring-red-500/20"
+              }`}>
+                {station.is_active ? t("working") : t("not_working")}
+              </div>
             </div>
           </div>
 
@@ -118,24 +143,40 @@ const StationCard: React.FC<StationCardProps> = ({
             {station.phone && (
               <div className="flex items-center gap-2.5 text-sm text-muted-foreground">
                 <Phone className="w-3.5 h-3.5 text-primary shrink-0" />
-                <span dir="ltr">{station.phone}</span>
+                <span dir="ltr">{shouldShowPhone ? station.phone : maskPhone(station.phone)}</span>
               </div>
             )}
           </div>
 
+          {/* Fuel Availability */}
+          {station.fuel_types && station.fuel_types.length > 0 && (
+            <div className="flex items-center gap-2 flex-wrap">
+              {station.fuel_types.includes("benzine") && (
+                <div className={`inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                  station.benzine_available !== false
+                    ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 ring-1 ring-emerald-500/20"
+                    : "bg-red-500/10 text-red-700 dark:text-red-300 ring-1 ring-red-500/20"
+                }`}>
+                  <Droplets className="w-3 h-3" />
+                  {t("benzine")}: {station.benzine_available !== false ? t("available") : t("unavailable")}
+                </div>
+              )}
+              {station.fuel_types.includes("diesel") && (
+                <div className={`inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                  station.diesel_available !== false
+                    ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 ring-1 ring-emerald-500/20"
+                    : "bg-red-500/10 text-red-700 dark:text-red-300 ring-1 ring-red-500/20"
+                }`}>
+                  <Fuel className="w-3 h-3" />
+                  {t("diesel")}: {station.diesel_available !== false ? t("available") : t("unavailable")}
+                </div>
+              )}
+            </div>
+          )}
+
           {/* Tags */}
           <div className="flex items-center gap-1.5 flex-wrap">
             <VerificationBadge status={station.verification_status} t={t} />
-            {station.fuel_types?.map((fuel) => (
-              <Badge
-                key={fuel}
-                variant="outline"
-                className="text-[10px] gap-1 border-primary/15 dark:border-primary/25 text-primary font-semibold"
-              >
-                <Fuel className="w-2.5 h-2.5" />
-                {fuel === "benzine" ? t("benzine") : fuel === "diesel" ? t("diesel") : fuel}
-              </Badge>
-            ))}
           </div>
 
           {/* Actions */}
@@ -227,6 +268,24 @@ const StationCard: React.FC<StationCardProps> = ({
               ))}
             </div>
 
+            {/* Fuel Availability in details */}
+            {station.fuel_types && station.fuel_types.length > 0 && (
+              <div className="flex gap-3 flex-wrap">
+                {station.fuel_types.includes("benzine") && (
+                  <div className={`flex items-center gap-2 text-sm font-semibold ${station.benzine_available !== false ? "text-emerald-600 dark:text-emerald-400" : "text-red-600 dark:text-red-400"}`}>
+                    <Droplets className="w-4 h-4" />
+                    {station.benzine_available !== false ? t("benzine_available") : t("benzine_unavailable")}
+                  </div>
+                )}
+                {station.fuel_types.includes("diesel") && (
+                  <div className={`flex items-center gap-2 text-sm font-semibold ${station.diesel_available !== false ? "text-emerald-600 dark:text-emerald-400" : "text-red-600 dark:text-red-400"}`}>
+                    <Fuel className="w-4 h-4" />
+                    {station.diesel_available !== false ? t("diesel_available") : t("diesel_unavailable")}
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* Info Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-muted/40 dark:bg-muted/20 rounded-xl p-4">
               {station.station_number && (
@@ -250,7 +309,7 @@ const StationCard: React.FC<StationCardProps> = ({
               {station.phone && (
                 <div>
                   <p className="text-xs text-muted-foreground mb-1">{t("phone")}</p>
-                  <p className="font-semibold text-foreground" dir="ltr">{station.phone}</p>
+                  <p className="font-semibold text-foreground" dir="ltr">{shouldShowPhone ? station.phone : maskPhone(station.phone)}</p>
                 </div>
               )}
             </div>
@@ -274,8 +333,8 @@ const StationCard: React.FC<StationCardProps> = ({
               </div>
             )}
 
-            {/* Station Images */}
-            {(station.passport_image_url || station.license_image_url) && (
+            {/* Station Images - passport visible to all, license only to owner/admin */}
+            {(station.passport_image_url || (station.license_image_url && isOwnerOrAdmin)) && (
               <div>
                 <p className="text-sm font-bold text-foreground mb-3 flex items-center gap-1">
                   <Image className="w-4 h-4 text-primary" />
@@ -294,7 +353,7 @@ const StationCard: React.FC<StationCardProps> = ({
                       </a>
                     </div>
                   )}
-                  {station.license_image_url && (
+                  {station.license_image_url && isOwnerOrAdmin && (
                     <div>
                       <p className="text-xs text-muted-foreground mb-1">{t("station_license")}</p>
                       <a href={station.license_image_url} target="_blank" rel="noreferrer">

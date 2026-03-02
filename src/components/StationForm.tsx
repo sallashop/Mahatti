@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import { Upload, MapPin, Loader2, Camera, FileText } from "lucide-react";
 import LocationPicker from "./LocationPicker";
@@ -36,6 +37,7 @@ const StationForm: React.FC<StationFormProps> = ({ station, onSuccess, onCancel 
     license_image_url: station?.license_image_url || "",
     benzine_available: station?.benzine_available ?? true,
     diesel_available: station?.diesel_available ?? true,
+    show_station_number: station?.show_station_number ?? true,
   });
 
   const handleFuelTypeChange = (type: string, checked: boolean) => {
@@ -79,8 +81,6 @@ const StationForm: React.FC<StationFormProps> = ({ station, onSuccess, onCancel 
 
     try {
       if (station?.id) {
-        // When editing, don't change owner_id
-        const { owner_id, ...updatePayload } = { ...formData, owner_id: user.id };
         const { error } = await supabase.from("stations").update(formData).eq("id", station.id);
         if (error) throw error;
       } else {
@@ -139,6 +139,23 @@ const StationForm: React.FC<StationFormProps> = ({ station, onSuccess, onCancel 
           />
         </div>
         <div className="space-y-1.5">
+          <Label className="font-semibold">{t("phone")}</Label>
+          <Input
+            value={formData.phone}
+            onChange={(e) => setFormData((p) => ({ ...p, phone: e.target.value }))}
+            placeholder="+218 9xx xxx xxxx"
+            dir="ltr"
+            className="bg-background"
+          />
+          <label className="flex items-center gap-2 cursor-pointer mt-1">
+            <Switch
+              checked={formData.show_station_number}
+              onCheckedChange={(c) => setFormData(p => ({ ...p, show_station_number: c }))}
+            />
+            <span className="text-xs text-muted-foreground">{t("show_phone_to_visitors")}</span>
+          </label>
+        </div>
+        <div className="space-y-1.5">
           <Label className="font-semibold">{t("city")} *</Label>
           <Input
             required
@@ -148,16 +165,7 @@ const StationForm: React.FC<StationFormProps> = ({ station, onSuccess, onCancel 
             className="bg-background"
           />
         </div>
-        <div className="space-y-1.5">
-          <Label className="font-semibold">{t("phone")}</Label>
-          <Input
-            value={formData.phone}
-            onChange={(e) => setFormData((p) => ({ ...p, phone: e.target.value }))}
-            placeholder="+966 5xx xxx xxxx"
-            dir="ltr"
-            className="bg-background"
-          />
-        </div>
+        
         <div className="space-y-1.5 sm:col-span-2">
           <Label className="font-semibold">{t("address")}</Label>
           <Input
