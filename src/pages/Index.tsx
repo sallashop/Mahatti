@@ -1,27 +1,28 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 import Navbar from "@/components/Navbar";
 import StationCard from "@/components/StationCard";
-import LocationPicker from "@/components/LocationPicker";
 import Footer from "@/components/Footer";
 import PWAInstallPrompt from "@/components/PWAInstallPrompt";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Search, Fuel, MapPin, Activity } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Search, Fuel, MapPin, Activity, Heart } from "lucide-react";
 import StationsMap from "@/components/StationsMap";
+import { useFavorites } from "@/hooks/useFavorites";
 import logo from "@/assets/logo.png";
 
 const Index: React.FC = () => {
   const { t } = useTranslation();
   const [stations, setStations] = useState<any[]>([]);
-  const [filteredStations, setFilteredStations] = useState<any[]>([]);
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState<"all" | "active" | "inactive">("all");
   const [filterFuel, setFilterFuel] = useState<"all" | "benzine" | "diesel">("all");
-  const [mapStation, setMapStation] = useState<any>(null);
+  const [filterCity, setFilterCity] = useState<string>("all");
+  const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
   const [loading, setLoading] = useState(true);
+  const { favorites, toggle, isFavorite } = useFavorites();
 
   useEffect(() => {
     fetchStations();
@@ -33,11 +34,15 @@ const Index: React.FC = () => {
       .select("*")
       .order("created_at", { ascending: false });
     setStations(data || []);
-    setFilteredStations(data || []);
     setLoading(false);
   };
 
-  useEffect(() => {
+  const cities = useMemo(() => {
+    const citySet = new Set(stations.map(s => s.city).filter(Boolean));
+    return Array.from(citySet).sort();
+  }, [stations]);
+
+  const filteredStations = useMemo(() => {
     let result = [...stations];
 
     if (search) {
@@ -54,14 +59,42 @@ const Index: React.FC = () => {
     }
 
     if (filterFuel !== "all") {
-      result = result.filter((s) => s.fuel_types?.includes(filterFuel));
+      if (filterFuel === "benzine") {
+        result = result.filter((s) => s.fuel_types?.includes("benzine") && s.benzine_available !== false);
+      } else if (filterFuel === "diesel") {
+        result = result.filter((s) => s.fuel_types?.includes("diesel") && s.diesel_available !== false);
+      }
     }
 
-    setFilteredStations(result);
-  }, [search, filterStatus, filterFuel, stations]);
+    if (filterCity !== "all") {
+      result = result.filter((s) => s.city === filterCity);
+    }
+
+    if (showFavoritesOnly) {
+      result = result.filter((s) => favorites.includes(s.id));
+    }
+
+    return result;
+  }, [search, filterStatus, filterFuel, filterCity, showFavoritesOnly, stations, favorites]);
 
   const totalActive = stations.filter((s) => s.is_active).length;
   const totalVerified = stations.filter((s) => s.verification_status === "verified").length;
+
+  const handleStatClick = (type: "all" | "active" | "verified") => {
+    if (type === "all") {
+      setFilterStatus("all");
+    } else if (type === "active") {
+      setFilterStatus(prev => prev === "active" ? "all" : "active");
+    } else if (type === "verified") {
+      // No direct filter for verified, but we can scroll to results
+      setFilterStatus("all");
+    }
+    setFilterCity("all");
+    setFilterFuel("all");
+    setSearch("");
+    // scroll to stations section
+    document.getElementById("stations-section")?.scrollIntoView({ behavior: "smooth" });
+  };
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -78,25 +111,29 @@ const Index: React.FC = () => {
           <div className="flex flex-col items-center text-center">
             <div className="relative mb-6">
               <div className="absolute inset-0 rounded-full bg-amber-400/30 blur-2xl scale-150" />
-              <img src={logo} alt={t("app_name")} className="w-20 h-20 rounded-full relative z-10 shadow-2xl" />
+              <img src={logo} alt={t("app_name")} className="w-20 h-20 rounded-2xl relative z-10 shadow-2xl" />
             </div>
             <h1 className="text-4xl sm:text-5xl font-black mb-3 leading-tight">
               {t("welcome")}
             </h1>
             <p className="text-lg text-blue-100 mb-8 max-w-md">{t("welcome_desc")}</p>
 
-            {/* Stats */}
+            {/* Stats - clickable */}
             <div className="grid grid-cols-3 gap-4 sm:gap-8 w-full max-w-lg">
               {[
-                { label: t("total_stations"), value: stations.length, icon: <Fuel className="w-5 h-5" /> },
-                { label: t("active_stations"), value: totalActive, icon: <Activity className="w-5 h-5" /> },
-                { label: t("verified"), value: totalVerified, icon: <MapPin className="w-5 h-5" /> },
+                { label: t("total_stations"), value: stations.length, icon: <Fuel className="w-5 h-5" />, type: "all" as const },
+                { label: t("active_stations"), value: totalActive, icon: <Activity className="w-5 h-5" />, type: "active" as const },
+                { label: t("verified"), value: totalVerified, icon: <MapPin className="w-5 h-5" />, type: "verified" as const },
               ].map((stat) => (
-                <div key={stat.label} className="bg-white/10 backdrop-blur-sm rounded-2xl p-4 border border-white/20">
+                <button
+                  key={stat.label}
+                  onClick={() => handleStatClick(stat.type)}
+                  className="bg-white/10 backdrop-blur-sm rounded-2xl p-4 border border-white/20 hover:bg-white/20 transition-colors cursor-pointer"
+                >
                   <div className="text-amber-400 mb-1 flex justify-center">{stat.icon}</div>
                   <div className="text-2xl font-black">{stat.value}</div>
                   <div className="text-xs text-blue-100 mt-0.5">{stat.label}</div>
-                </div>
+                </button>
               ))}
             </div>
           </div>
@@ -108,7 +145,7 @@ const Index: React.FC = () => {
       <StationsMap stations={stations} />
 
       {/* Search & Filter */}
-      <section className="container mx-auto px-4 pb-8 flex-1">
+      <section id="stations-section" className="container mx-auto px-4 pb-8 flex-1">
         <div className="bg-card rounded-2xl border border-border p-4 shadow-sm mb-6 space-y-3">
           <div className="relative">
             <Search className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -119,7 +156,7 @@ const Index: React.FC = () => {
               className="ps-10 bg-background"
             />
           </div>
-          <div className="flex gap-2 flex-wrap">
+          <div className="flex gap-2 flex-wrap items-center">
             {(["all", "active", "inactive"] as const).map((f) => (
               <Button
                 key={f}
@@ -133,7 +170,7 @@ const Index: React.FC = () => {
                 {t(f === "all" ? "all" : f === "active" ? "active" : "inactive")}
               </Button>
             ))}
-            <div className="w-px bg-border" />
+            <div className="w-px h-6 bg-border" />
             {(["all", "benzine", "diesel"] as const).map((f) => (
               <Button
                 key={f}
@@ -147,7 +184,31 @@ const Index: React.FC = () => {
                 {t(f === "all" ? "all" : f)}
               </Button>
             ))}
+            <div className="w-px h-6 bg-border" />
+            <Button
+              size="sm"
+              variant={showFavoritesOnly ? "default" : "outline"}
+              onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
+              className={`text-xs font-semibold gap-1 ${showFavoritesOnly ? "bg-red-500 text-white border-0 hover:bg-red-600" : "text-muted-foreground"}`}
+            >
+              <Heart className={`w-3 h-3 ${showFavoritesOnly ? "fill-white" : ""}`} />
+              {t("favorites")}
+            </Button>
           </div>
+          {/* City filter */}
+          {cities.length > 1 && (
+            <Select value={filterCity} onValueChange={setFilterCity}>
+              <SelectTrigger className="w-full sm:w-48 bg-background text-sm">
+                <SelectValue placeholder={t("filter_by_city")} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">{t("all_cities")}</SelectItem>
+                {cities.map(city => (
+                  <SelectItem key={city} value={city}>{city}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
         </div>
 
         {/* Results count */}
@@ -176,29 +237,13 @@ const Index: React.FC = () => {
               <StationCard
                 key={station.id}
                 station={station}
-                onViewMap={() => setMapStation(station)}
+                isFavorite={isFavorite(station.id)}
+                onToggleFavorite={() => toggle(station.id)}
               />
             ))}
           </div>
         )}
       </section>
-
-      {/* Map Dialog */}
-      <Dialog open={!!mapStation} onOpenChange={() => setMapStation(null)}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle className="font-bold">{mapStation?.station_name}</DialogTitle>
-          </DialogHeader>
-          {mapStation && (
-            <LocationPicker
-              lat={mapStation.lat}
-              lng={mapStation.lng}
-              readOnly
-              label={mapStation.station_name}
-            />
-          )}
-        </DialogContent>
-      </Dialog>
 
       <Footer />
     </div>

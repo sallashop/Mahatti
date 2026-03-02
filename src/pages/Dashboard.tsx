@@ -10,7 +10,9 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
-import { Plus, Fuel, CheckCircle, Clock } from "lucide-react";
+import { Plus, Fuel, CheckCircle, Clock, Droplets } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 
 const Dashboard: React.FC = () => {
   const { t } = useTranslation();
@@ -52,6 +54,17 @@ const Dashboard: React.FC = () => {
       .eq("id", station.id);
     if (!error) {
       toast.success(station.is_active ? t("deactivate") + " ✓" : t("activate") + " ✓");
+      fetchStations();
+    }
+  };
+
+  const handleToggleFuel = async (station: any, fuelField: "benzine_available" | "diesel_available") => {
+    const { error } = await supabase
+      .from("stations")
+      .update({ [fuelField]: !station[fuelField] })
+      .eq("id", station.id);
+    if (!error) {
+      toast.success(t("settings_saved"));
       fetchStations();
     }
   };
@@ -132,14 +145,45 @@ const Dashboard: React.FC = () => {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {stations.map((station) => (
-              <StationCard
-                key={station.id}
-                station={station}
-                showActions
-                onToggleActive={() => handleToggleActive(station)}
-                onEdit={() => { setEditStation(station); setShowForm(true); }}
-                onDelete={() => setDeleteStation(station)}
-              />
+              <div key={station.id} className="space-y-2">
+                <StationCard
+                  station={station}
+                  showActions
+                  onToggleActive={() => handleToggleActive(station)}
+                  onEdit={() => { setEditStation(station); setShowForm(true); }}
+                  onDelete={() => setDeleteStation(station)}
+                />
+                {/* Quick fuel availability toggles */}
+                {station.fuel_types && station.fuel_types.length > 0 && (
+                 <div className="bg-card dark:bg-muted/30 rounded-xl border border-border p-3 space-y-2">
+                    <p className="text-xs font-bold text-foreground">{t("fuel_availability")}</p>
+                    {station.fuel_types.includes("benzine") && (
+                      <div className="flex items-center justify-between">
+                        <Label className="flex items-center gap-2 text-xs font-semibold cursor-pointer">
+                          <Droplets className="w-3.5 h-3.5 text-amber-500" />
+                          {t("benzine")}
+                        </Label>
+                        <Switch
+                          checked={station.benzine_available !== false}
+                          onCheckedChange={() => handleToggleFuel(station, "benzine_available")}
+                        />
+                      </div>
+                    )}
+                    {station.fuel_types.includes("diesel") && (
+                      <div className="flex items-center justify-between">
+                        <Label className="flex items-center gap-2 text-xs font-semibold cursor-pointer">
+                          <Fuel className="w-3.5 h-3.5 text-emerald-500" />
+                          {t("diesel")}
+                        </Label>
+                        <Switch
+                          checked={station.diesel_available !== false}
+                          onCheckedChange={() => handleToggleFuel(station, "diesel_available")}
+                        />
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
             ))}
           </div>
         )}

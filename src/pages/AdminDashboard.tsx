@@ -163,6 +163,17 @@ const AdminDashboard: React.FC = () => {
     }
   };
 
+  const handleToggleActive = async (station: any) => {
+    const { error } = await supabase
+      .from("stations")
+      .update({ is_active: !station.is_active })
+      .eq("id", station.id);
+    if (!error) {
+      toast.success(station.is_active ? t("deactivate") + " ✓" : t("activate") + " ✓");
+      fetchAll();
+    }
+  };
+
   const filtered = stations.filter((s) => {
     const matchSearch =
       !search ||
@@ -289,6 +300,7 @@ const AdminDashboard: React.FC = () => {
                 <StationCard
                   station={station}
                   showActions
+                  onToggleActive={() => handleToggleActive(station)}
                   onEdit={() => { setEditStation(station); setShowEditForm(true); }}
                   onDelete={() => setDeleteStation(station)}
                 />
