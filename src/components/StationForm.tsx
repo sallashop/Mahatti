@@ -247,16 +247,19 @@ const StationForm: React.FC<StationFormProps> = ({ station, onSuccess, onCancel 
         {uploadFields.map(({ field, label, icon, isUploading, setUploading }) => (
           <div key={field} className="space-y-2">
             <Label className="font-semibold">{label}</Label>
-            <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-border rounded-xl cursor-pointer hover:border-primary/50 hover:bg-muted/50 transition-colors relative overflow-hidden">
-              {formData[field] ? (
+            <label className={`flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-xl cursor-pointer transition-colors relative overflow-hidden ${isUploading ? 'border-primary bg-primary/5 animate-pulse' : 'border-border hover:border-primary/50 hover:bg-muted/50'}`}>
+              {isUploading ? (
+                <div className="flex flex-col items-center gap-2">
+                  <Loader2 className="w-6 h-6 animate-spin text-primary" />
+                  <span className="text-xs font-semibold text-primary">{t("uploading")}...</span>
+                </div>
+              ) : formData[field] ? (
                 <>
                   <img src={formData[field]} alt="" className="absolute inset-0 w-full h-full object-cover rounded-xl" />
                   <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity rounded-xl">
                     <p className="text-white text-xs font-semibold">{t("upload_image")}</p>
                   </div>
                 </>
-              ) : isUploading ? (
-                <Loader2 className="w-6 h-6 animate-spin text-primary" />
               ) : (
                 <>
                   {icon}
