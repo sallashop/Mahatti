@@ -1,5 +1,5 @@
 {
-  "name": "محطتي | Mahatati",
+  "name": "محطتي | Mahatti",
   "short_name": "محطتي",
   "description": "دليلك الشامل لمحطات الوقود",
   "start_url": "/",
@@ -9,7 +9,7 @@
   "orientation": "portrait",
   "icons": [
     {
-      "src": "/favicon.ico",
+      "src": "/favicon.png",
       "sizes": "64x64",
       "type": "image/x-icon"
     }
