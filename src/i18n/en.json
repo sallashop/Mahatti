@@ -155,5 +155,8 @@
   "show_phone_to_visitors": "Show full phone number to visitors",
   "favorites": "Favorites",
   "filter_by_city": "Filter by city",
-  "all_cities": "All Cities"
+  "all_cities": "All Cities",
+  "email_already_registered": "This email is already registered. Forgot your password?",
+  "uploading": "Uploading",
+  "online_now": "visitors online now"
 }

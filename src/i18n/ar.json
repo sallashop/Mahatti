@@ -155,5 +155,8 @@
   "show_phone_to_visitors": "إظهار رقم الهاتف كاملاً للزوار",
   "favorites": "المفضلة",
   "filter_by_city": "تصفية حسب المدينة",
-  "all_cities": "كل المدن"
+  "all_cities": "كل المدن",
+  "email_already_registered": "هذا البريد مسجّل مسبقاً. هل نسيت كلمة المرور؟",
+  "uploading": "جاري الرفع",
+  "online_now": "زائر متصل الآن"
 }
