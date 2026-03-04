@@ -75,7 +75,16 @@ const Auth: React.FC = () => {
       },
     });
     if (error) {
-      toast.error(error.message);
+      if (error.message?.toLowerCase().includes("already") || error.message?.includes("already been registered")) {
+        toast.error(t("email_already_registered"), {
+          action: {
+            label: t("forgot_password"),
+            onClick: () => navigate("/auth?tab=login"),
+          },
+        });
+      } else {
+        toast.error(error.message);
+      }
     } else {
       toast.success("تم إرسال رسالة التأكيد على بريدك الإلكتروني ✉️");
     }
