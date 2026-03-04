@@ -30,7 +30,7 @@ const Footer: React.FC = () => {
     fetchSettings();
   }, []);
 
-  // Realtime presence for online visitors
+  /* --- تم تعليق كود تتبع الزوار للحفاظ على الموارد طالما أنه مخفي ---
   useEffect(() => {
     const visitorId = crypto.randomUUID();
     const channel = supabase.channel("online-visitors", {
@@ -52,6 +52,7 @@ const Footer: React.FC = () => {
       supabase.removeChannel(channel);
     };
   }, []);
+  ------------------------------------------------------------------ */
 
   return (
     <footer className="bg-primary dark:bg-[hsl(220,50%,8%)] text-primary-foreground dark:text-slate-300 mt-12">
@@ -126,6 +127,8 @@ const Footer: React.FC = () => {
               {t("donate_btn")}
             </button>
           )}
+
+          {/* --- تم تعليق جزء الزوار المتصلين هنا ---
           <div className="flex items-center gap-2 text-xs text-primary-foreground/70 dark:text-slate-400">
             <span className="relative flex h-2 w-2">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
@@ -134,6 +137,8 @@ const Footer: React.FC = () => {
             <Users className="w-3.5 h-3.5" />
             <span>{onlineCount} {t("online_now")}</span>
           </div>
+          ---------------------------------------- */}
+
           <p className="text-xs text-primary-foreground/50 dark:text-slate-500">
             © {year} {t("app_name")}. {t("all_rights_reserved")}
           </p>
