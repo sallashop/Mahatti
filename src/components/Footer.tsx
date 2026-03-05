@@ -12,7 +12,6 @@ const Footer: React.FC = () => {
   const [showDonation, setShowDonation] = useState(false);
   const [donationEnabled, setDonationEnabled] = useState(true);
   const [donationAccount, setDonationAccount] = useState("LY38005101101012893830015");
-  const [onlineCount, setOnlineCount] = useState(1);
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [canInstall, setCanInstall] = useState(false);
 
@@ -56,31 +55,6 @@ const Footer: React.FC = () => {
     };
     fetchSettings();
   }, []);
-
-  /* --- تم تعليق كود الزوار المتصلين مؤقتاً لإيقاف تفعيله ---
-  // Realtime presence for online visitors
-  useEffect(() => {
-    const visitorId = crypto.randomUUID();
-    const channel = supabase.channel("online-visitors", {
-      config: { presence: { key: visitorId } },
-    });
-
-    channel
-      .on("presence", { event: "sync" }, () => {
-        const state = channel.presenceState();
-        setOnlineCount(Object.keys(state).length);
-      })
-      .subscribe(async (status) => {
-        if (status === "SUBSCRIBED") {
-          await channel.track({ visitor_id: visitorId, online_at: new Date().toISOString() });
-        }
-      });
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, []);
-  -------------------------------------------------------- */
 
   return (
     <footer className="bg-primary dark:bg-[hsl(220,50%,8%)] text-primary-foreground dark:text-slate-300 mt-12">
@@ -166,17 +140,6 @@ const Footer: React.FC = () => {
               </button>
             )}
           </div>
-          
-          {/* --- تم تعليق ظهور الزوار المتصلين في الواجهة ---
-          <div className="flex items-center gap-2 text-xs text-primary-foreground/70 dark:text-slate-400">
-            <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-            </span>
-            <Users className="w-3.5 h-3.5" />
-            <span>{onlineCount} {t("online_now")}</span>
-          </div>
-          ------------------------------------------------ */}
           
           <p className="text-xs text-primary-foreground/50 dark:text-slate-500">
             © {year} {t("app_name")}. {t("all_rights_reserved")}
