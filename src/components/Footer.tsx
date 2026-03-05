@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
-import { Heart, Users } from "lucide-react";
+import { Heart, Users, Download } from "lucide-react";
 import logo from "@/assets/logo.png";
 import DonationDialog from "./DonationDialog";
 import { supabase } from "@/integrations/supabase/client";
@@ -13,6 +13,33 @@ const Footer: React.FC = () => {
   const [donationEnabled, setDonationEnabled] = useState(true);
   const [donationAccount, setDonationAccount] = useState("LY38005101101012893830015");
   const [onlineCount, setOnlineCount] = useState(1);
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  const [canInstall, setCanInstall] = useState(false);
+
+  useEffect(() => {
+    const isStandalone = window.matchMedia("(display-mode: standalone)").matches
+      || (navigator as any).standalone === true;
+    if (isStandalone) return;
+
+    const handler = (e: Event) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+      setCanInstall(true);
+    };
+    window.addEventListener("beforeinstallprompt", handler);
+    return () => window.removeEventListener("beforeinstallprompt", handler);
+  }, []);
+
+  const handleInstallApp = async () => {
+    if (deferredPrompt) {
+      await deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      if (outcome === "accepted") {
+        setCanInstall(false);
+        setDeferredPrompt(null);
+      }
+    }
+  };
 
   useEffect(() => {
     const fetchSettings = async () => {
@@ -30,7 +57,8 @@ const Footer: React.FC = () => {
     fetchSettings();
   }, []);
 
-  /* --- تم تعليق كود تتبع الزوار للحفاظ على الموارد طالما أنه مخفي ---
+  /* --- تم تعليق كود الزوار المتصلين مؤقتاً لإيقاف تفعيله ---
+  // Realtime presence for online visitors
   useEffect(() => {
     const visitorId = crypto.randomUUID();
     const channel = supabase.channel("online-visitors", {
@@ -52,7 +80,7 @@ const Footer: React.FC = () => {
       supabase.removeChannel(channel);
     };
   }, []);
-  ------------------------------------------------------------------ */
+  -------------------------------------------------------- */
 
   return (
     <footer className="bg-primary dark:bg-[hsl(220,50%,8%)] text-primary-foreground dark:text-slate-300 mt-12">
@@ -116,19 +144,30 @@ const Footer: React.FC = () => {
           </div>
         </div>
 
-        {/* Donate Button */}
+        {/* Donate & Install */}
         <div className="mt-8 pt-6 border-t border-primary-foreground/10 dark:border-slate-700 flex flex-col items-center gap-3">
-          {donationEnabled && (
-            <button
-              onClick={() => setShowDonation(true)}
-              className="flex items-center gap-2 px-4 py-2 rounded-full bg-primary-foreground/10 hover:bg-primary-foreground/20 transition-colors text-sm text-primary-foreground dark:text-slate-200 font-semibold"
-            >
-              <Heart className="w-4 h-4 text-red-400" />
-              {t("donate_btn")}
-            </button>
-          )}
-
-          {/* --- تم تعليق جزء الزوار المتصلين هنا ---
+          <div className="flex items-center gap-3 flex-wrap justify-center">
+            {donationEnabled && (
+              <button
+                onClick={() => setShowDonation(true)}
+                className="flex items-center gap-2 px-4 py-2 rounded-full bg-primary-foreground/10 hover:bg-primary-foreground/20 transition-colors text-sm text-primary-foreground dark:text-slate-200 font-semibold"
+              >
+                <Heart className="w-4 h-4 text-red-400" />
+                {t("donate_btn")}
+              </button>
+            )}
+            {canInstall && (
+              <button
+                onClick={handleInstallApp}
+                className="flex items-center gap-2 px-4 py-2 rounded-full bg-primary-foreground/10 hover:bg-primary-foreground/20 transition-colors text-sm text-primary-foreground dark:text-slate-200 font-semibold"
+              >
+                <Download className="w-4 h-4 text-emerald-400" />
+                {t("install_app")}
+              </button>
+            )}
+          </div>
+          
+          {/* --- تم تعليق ظهور الزوار المتصلين في الواجهة ---
           <div className="flex items-center gap-2 text-xs text-primary-foreground/70 dark:text-slate-400">
             <span className="relative flex h-2 w-2">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
@@ -137,8 +176,8 @@ const Footer: React.FC = () => {
             <Users className="w-3.5 h-3.5" />
             <span>{onlineCount} {t("online_now")}</span>
           </div>
-          ---------------------------------------- */}
-
+          ------------------------------------------------ */}
+          
           <p className="text-xs text-primary-foreground/50 dark:text-slate-500">
             © {year} {t("app_name")}. {t("all_rights_reserved")}
           </p>
