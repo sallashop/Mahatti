@@ -66,7 +66,7 @@ const Auth: React.FC = () => {
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email: registerForm.email,
       password: registerForm.password,
       options: {
@@ -78,13 +78,21 @@ const Auth: React.FC = () => {
       if (error.message?.toLowerCase().includes("already") || error.message?.includes("already been registered")) {
         toast.error(t("email_already_registered"), {
           action: {
-            label: t("forgot_password"),
+            label: t("login"),
             onClick: () => navigate("/auth?tab=login"),
           },
         });
       } else {
         toast.error(error.message);
       }
+    } else if (data?.user && (!data.user.identities || data.user.identities.length === 0)) {
+      // Supabase returns a fake user with empty identities when email already exists (auto-confirm OFF)
+      toast.error(t("email_already_registered"), {
+        action: {
+          label: t("login"),
+          onClick: () => navigate("/auth?tab=login"),
+        },
+      });
     } else {
       toast.success("تم إرسال رسالة التأكيد على بريدك الإلكتروني ✉️");
     }
